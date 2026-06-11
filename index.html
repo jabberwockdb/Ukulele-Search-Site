@@ -70,31 +70,48 @@
 </div>
 
 <script>
+    // Robust, cross-browser SHA-256 function using standard array operations
+    function createSecureHash(str) {
+        var buffer = new TextEncoder("utf-8").encode(str);
+        return crypto.subtle.digest("SHA-256", buffer).then(function (hash) {
+            return Array.prototype.map.call(new Uint8Array(hash), function (x) {
+                return ('00' + x.toString(16)).slice(-2);
+            }).join('');
+        });
+    }
+
     document.getElementById("loginForm").addEventListener("submit", function(event) {
         event.preventDefault();
         const submitBtn = document.getElementById("submitBtn");
         const cooldownMsg = document.getElementById("cooldownMsg");
         
-        // Grab inputs and make sure no accidental leading/trailing spaces break the check
         const usernameInput = document.getElementById("username").value.trim().toLowerCase();
         const passwordInput = document.getElementById("password").value.trim().toLowerCase();
+        
+        // Combine them into a single string to protect both fields at once
+        const secretCombination = usernameInput + ":" + passwordInput;
+        
+        // Hash the input dynamically
+        createSecureHash(secretCombination).then(function(hashedResult) {
+            // This is the clean, lowercase hash of the combined credentials
+            const targetToken = "78b456e343b679b38031e411b426615b3c5825bc5e7ee065b79e9da28800ff8a";
 
-        // Direct matching logic to completely bypass complex browser crypto errors
-        if (usernameInput === "ukulele" && passwordInput === "friends") {
-            localStorage.setItem("uke_authenticated", "true");
-            window.location.href = "search.html";
-        } else {
-            alert("Invalid username or password!");
-            
-            // Trigger 3-second spam protection cooldown
-            submitBtn.disabled = true;
-            cooldownMsg.style.display = "block";
-            
-            setTimeout(() => {
-                submitBtn.disabled = false;
-                cooldownMsg.style.display = "none";
-            }, 3000);
-        }
+            if (hashedResult === targetToken) {
+                localStorage.setItem("uke_authenticated", "true");
+                window.location.href = "search.html";
+            } else {
+                alert("Invalid username or password!");
+                
+                // Trigger 3-second spam protection cooldown
+                submitBtn.disabled = true;
+                cooldownMsg.style.display = "block";
+                
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    cooldownMsg.style.display = "none";
+                }, 3000);
+            }
+        });
     });
 
     document.getElementById("googleLoginBtn").addEventListener("click", function() {
