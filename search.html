@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V13 Uke Songs Database</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 40px 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #bdc3c7;
+            border-radius: 25px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s;
+            margin-bottom: 5px;
+        }
+        .search-box:focus {
+            border-color: #3498db;
+        }
+        .results-info {
+            margin: 15px 0;
+            font-style: italic;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        .alert-message {
+            background-color: #fadbd8;
+            color: #78281f;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-weight: bold;
+            border-left: 5px solid #e74c3c;
+            display: none; /* Hidden by default */
+        }
+        /* Scrolling Window Container for Results */
+        .table-scroll-container {
+            max-height: 550px; /* Limits view height comfortably, scrolls up to 50 */
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0; /* Keeps headers visible while scrolling */
+            z-index: 10;
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        .pdf-link {
+            color: #e74c3c;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .pdf-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎵 V13 Uke Songs Database</h1>
+    
+    <input type="text" id="searchInput" class="search-box" placeholder="Type terms in any order to search all columns simultaneously...">
+    
+    <div id="alertBanner" class="alert-message">⚠️ Please narrow down your search to get fewer than 50 results.</div>
+    
+    <div id="resultsCount" class="results-info">Loading database...</div>
+
+    <div class="table-scroll-container">
+        <table id="songsTable">
+            <thead>
+                <tr>
+                    <th>Song Title</th>
+                    <th>Composer</th>
+                    <th>Resource From</th>
+                    <th>Key</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script {nonce}>
+    let songDatabase = [];
+
+    // 1. Fetch data from your continuous log file
+    Papa.parse('V13_Composers_Updated.csv', {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            songDatabase = results.data;
+            document.getElementById('resultsCount').innerText = `Database active: ${songDatabase.length} songs loaded. Ready for query.`;
+            displaySongs(songDatabase.slice(0, 10)); // Initialize with first 10 tracks
+        },
+        error: function(err) {
+            document.getElementById('resultsCount').innerText = "Database mapping error. Ensure CSV file matches code target directory.";
+        }
+    });
+
+    // 2. Multi-word Universal Tracking Algorithm
+    const searchInput = document.getElementById('searchInput');
+    const alertBanner = document.getElementById('alertBanner');
+
+    searchInput.addEventListener('input', function() {
+        const rawQuery = this.value.toLowerCase().trim();
+        
+        // If search box is empty, show default first 10 songs and reset banners
+        if (!rawQuery) {
+            alertBanner.style.display = 'none';
+            document.getElementById('resultsCount').innerText = `Showing initial overview. Total entries available: ${songDatabase.length}`;
+            displaySongs(songDatabase.slice(0, 10));
+            return;
+        }
+
+        // Split the query by spaces to extract individual search terms
+        const searchTerms = rawQuery.split(/\s+/);
+        
+        // Filter rows where EVERY single term matches ANYWHERE in the entire row object
+        const filteredSongs = songDatabase.filter(song => {
+            // Smash absolutely all column values for this row into one single string
+            const allValuesJoined = Object.values(song).join(' ').toLowerCase();
+            
+            // Return true only if every individual search term is contained inside that combined row text
+            return searchTerms.every(term => allValuesJoined.includes(term));
+        });
+
+        // 3. Enforcement Logic Rules for Display Constraints
+        if (filteredSongs.length > 50) {
+            alertBanner.style.display = 'block'; // Show warning banner
+            document.getElementById('resultsCount').innerText = `Found ${filteredSongs.length} matching entries. Result list hidden.`;
+            displaySongs([]); // Wipe display clean until search narrows
+        } else {
+            alertBanner.style.display = 'none'; // Hide warning banner
+            document.getElementById('resultsCount').innerText = `Found ${filteredSongs.length} matching entries.`;
+            displaySongs(filteredSongs); // Display inside scrolling container window
+        }
+    });
+
+    // 4. Update HTML Table Data Rows
+    function displaySongs(songs) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = ''; 
+
+        if (songs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#7f8c8d; padding:20px;">No results currently visible. Check constraints.</td></tr>';
+            return;
+        }
+
+        songs.forEach(song => {
+            const tr = document.createElement('tr');
+            
+            // Fallbacks map cleanly to headers regardless of layout changes
+            const titleText = song['Title'] || 'Untitled';
+            const composerText = song['Composer'] || 'Unknown';
+            const resourceText = song['Resource'] || '';
+            const keyText = song['Key'] ? `In the key of ${song['Key']}` : 'N/A';
+            const linkUrl = song['Link'] || '#';
+
+            // Document PDF icon generation inside structural row link
+            let linkMarkup = '<em>No Document</em>';
+            if (linkUrl && linkUrl !== '#') {
+                linkMarkup = `<a href="${linkUrl}" target="_blank" class="pdf-link">📄 Link</a>`;
+            }
+
+            tr.innerHTML = `
+                <td><strong>${titleText}</strong></td>
+                <td>${composerText}</td>
+                <td>${resourceText}</td>
+                <td>${keyText}</td>
+                <td>${linkMarkup}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+
+</body>
+</html>

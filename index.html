@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beltran Family Vault</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        
+        body {
+            /* Full-screen local Maui Sunset PNG Background */
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+                        url('sunset.png') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.94);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            position: relative; /* Crucial for positioning the failed screen overlay */
+            overflow: hidden;
+        }
+
+        h2 { margin-bottom: 12px; color: #333; font-weight: 600; font-size: 24px; }
+        
+        .notice-text { 
+            color: #555; 
+            font-size: 14px; 
+            margin-bottom: 25px; 
+            line-height: 1.5;
+        }
+        .highlight {
+            color: #e06c00;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label { display: block; font-size: 11px; font-weight: 600; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus { border-color: #ff7b00; }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #ff7b00;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-login:hover { background: #e06c00; }
+
+        .divider {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            color: #888;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #ddd; margin: 0 10px; }
+
+        .btn-google {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #444;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: 0.3s;
+        }
+        .btn-google:hover { background: #f9f9f9; }
+
+        /* --- 🚫 SECURITY COOLDOWN OVERLAY SCREEN --- */
+        .cooldown-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff0f0; /* Soft secure red alert tint */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Class added dynamically by Javascript on failure */
+        .cooldown-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .alert-icon {
+            font-size: 50px;
+            color: #d9534f;
+            margin-bottom: 15px;
+        }
+
+        .alert-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #c9302c;
+            margin-bottom: 10px;
+        }
+
+        .alert-msg {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .timer-badge {
+            background: #d9534f;
+            color: white;
+            font-weight: 600;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(217, 83, 79, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        
+        <div id="cooldownOverlay" class="cooldown-screen">
+            <div class="alert-icon">🔒</div>
+            <div class="alert-title">Access Denied</div>
+            <div class="alert-msg">
+                Unauthorized account details detected.<br>
+                Anti-hacking throttle is actively protecting this vault.
+            </div>
+            <div id="countdownTimer" class="timer-badge">Try again in 5s</div>
+        </div>
+
+        <h2>Beltran Family Portal</h2>
+        <p class="notice-text">
+            Please sign in only if you are an <span class="highlight">Ukulele Friend</span> or a <span class="highlight">beltranfamily.com</span> member.
+        </p>
+        
+        <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="Enter username">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+        
+        <button class="btn-login" onclick="validateLogin()">Sign In</button>
+        
+        <div class="divider">OR</div>
+        
+        <button class="btn-google" onclick="simulateGoogleLogin()">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_Logo.svg" alt="Google Logo">
+            Sign in with @beltranfamily.com
+        </button>
+    </div>
+
+    <script>
+        let isThrottled = false;
+
+        function startCooldown() {
+            isThrottled = true;
+            const overlay = document.getElementById('cooldownOverlay');
+            const timerBadge = document.getElementById('countdownTimer');
+            
+            // Pop the red guard card right over everything
+            overlay.classList.add('active');
+
+            let secondsLeft = 5;
+            timerBadge.innerText = `Try again in ${secondsLeft}s`;
+
+            const loop = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft > 0) {
+                    timerBadge.innerText = `Try again in ${secondsLeft}s`;
+                } else {
+                    clearInterval(loop);
+                    // Hide the shield and clear inputs
+                    overlay.classList.remove('active');
+                    document.getElementById('password').value = "";
+                    isThrottled = false;
+                }
+            }, 1000);
+        }
+
+        function validateLogin() {
+            if (isThrottled) return;
+
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if (user === "ukulele" && pass === "friends") {
+                localStorage.setItem("authenticated", "true");
+                window.location.href = "dashboard.html";
+            } else {
+                startCooldown();
+            }
+        }
+
+        function simulateGoogleLogin() {
+            if (isThrottled) return;
+
+            let email = prompt("Enter your Google Workspace email address:");
+            if (email) {
+                if (email.toLowerCase().endsWith("@beltranfamily.com")) {
+                    localStorage.setItem("authenticated", "true");
+                    window.location.href = "dashboard.html";
+                } else {
+                    alert("Unauthorized account domain.");
+                    startCooldown();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
