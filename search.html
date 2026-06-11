@@ -138,12 +138,24 @@
             text-align: left;
         }
 
+        .table-scroll-container {
+            max-height: 480px; 
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
         }
-        th {
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
             background: #e65c00;
             color: white;
             padding: 12px;
@@ -151,7 +163,9 @@
             text-align: left;
             font-size: 15px;
             vertical-align: middle;
+            border-bottom: 2px solid #cc5200;
         }
+
         td {
             padding: 12px;
             border-bottom: 1px solid #eee;
@@ -160,8 +174,18 @@
             height: 22px;
             vertical-align: middle;
         }
+
         tr.placeholder-row td {
             color: #ddd;
+        }
+
+        .database-footnote {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+            text-align: left;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -175,7 +199,7 @@
 <div class="search-container">
     <div class="search-header-row">
         <div class="search-instructions">Please enter search terms to search among any fields below:</div>
-        <div class="version-tag">Version 12</div>
+        <div class="version-tag">Version 16</div>
     </div>
     
     <div class="search-row">
@@ -185,26 +209,31 @@
 
     <div id="alertContainer"></div>
 
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 25%;">Title</th>
-                <th style="width: 25%;">Origin</th>
-                <th style="width: 10%;">Key</th>
-                <th style="width: 12%;">AI<br>Key</th>
-                <th style="width: 18%;">Composers</th>
-                <th style="width: 10%;">File Link</th>
-            </tr>
-        </thead>
-        <tbody id="resultsTableBody">
-            </tbody>
-    </table>
+    <div class="table-scroll-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Title</th>
+                    <th style="width: 25%;">Composers</th>
+                    <th style="width: 10%;">Key*</th>
+                    <th style="width: 12%;">AI Key*</th>
+                    <th style="width: 18%;">Origin</th>
+                    <th style="width: 10%;">File Link</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="database-footnote">
+        * =  The Key is derived from the Title or the pdf name.  The AI key uses a program to try to read the last chord in the pdf.  The program can be wrong if it doesn't find the last chord.  Or if the song doesn't end on it's key chord.
+    </div>
 </div>
 
 <script>
     let songDatabase = [];
 
-    // Initializes the 10 empty structural display rows on startup
     function initEmptyGrid() {
         document.getElementById("alertContainer").style.display = "none";
         const tbody = document.getElementById("resultsTableBody");
@@ -218,17 +247,13 @@
     }
     window.onload = initEmptyGrid;
 
-    // TARGET FILE RESTORATION: Re-bound directly to your actual CSV filename asset
     Papa.parse("v13_uke_songs.csv", {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
             songDatabase = results.data;
-            console.log("Database initialized. Total items caught: " + songDatabase.length);
-        },
-        error: function(err) {
-            console.error("Critical fallback network path triggered for song file extraction.", err);
+            console.log("Database online. Connected records: " + songDatabase.length);
         }
     });
 
@@ -238,7 +263,6 @@
         }
     }
 
-    // Dynamic Header Resolution Engine: Normalizes keys to prevent mapping drops due to unseen spaces or formatting discrepancies
     function extractCSVValue(rowObj, targetedHeaderName) {
         const cleanTarget = targetedHeaderName.toLowerCase().replace(/[^a-z0-9]/g, "");
         for (let originalKey in rowObj) {
@@ -264,23 +288,19 @@
             return;
         }
 
-        // Tokenize search array queries into separate space-delimited string terms
         const searchTerms = query.split(/\s+/);
 
         const matchedSongs = songDatabase.filter(song => {
-            // Target search fields mapped flexibly by internal normalizer keys
             const title = extractCSVValue(song, "title").toLowerCase();
-            const origin = extractCSVValue(song, "origin").toLowerCase();
+            const composers = extractCSVValue(song, "composers").toLowerCase();
             const key = extractCSVValue(song, "key").toLowerCase();
             const aiKey = extractCSVValue(song, "aiguessedkey").toLowerCase();
-            const composers = extractCSVValue(song, "composers").toLowerCase();
+            const origin = extractCSVValue(song, "origin").toLowerCase();
 
-            if (!title && !origin && !key && !aiKey && !composers) return false;
+            if (!title && !composers && !key && !aiKey && !origin) return false;
 
-            // Target search space limited strictly to your requested content variables
-            const compositeTargetString = `${title} ${origin} ${key} ${aiKey} ${composers}`;
+            const compositeTargetString = `${title} ${composers} ${key} ${aiKey} ${origin}`;
 
-            // Verification Rule: Every word typed must look and exist here anywhere inside this row block
             return searchTerms.every(term => compositeTargetString.includes(term));
         });
 
@@ -291,7 +311,6 @@
             return;
         }
 
-        // Handling Threshold Limit Check Guardrail for responses over 50 items
         let displayList = matchedSongs;
         if (matchedSongs.length > 50) {
             alertContainer.innerHTML = `<div class="limit-alert">⚠️ Showing first 50 results of ${matchedSongs.length} total matches found. Please add more specific keywords to refine your search.</div>`;
@@ -299,23 +318,22 @@
             displayList = matchedSongs.slice(0, 50);
         }
 
-        // Append matching songs up to your target display limit safely
         displayList.forEach(song => {
             const tr = document.createElement("tr");
             
             const title = extractCSVValue(song, "title");
-            const origin = extractCSVValue(song, "origin");
+            const composers = extractCSVValue(song, "composers");
             const key = extractCSVValue(song, "key");
             const aiKey = extractCSVValue(song, "aiguessedkey");
-            const composers = extractCSVValue(song, "composers");
+            const origin = extractCSVValue(song, "origin");
             const fileLink = extractCSVValue(song, "link"); 
 
             tr.innerHTML = `
                 <td><strong>${title}</strong></td>
-                <td>${origin || '--'}</td>
+                <td>${composers || '--'}</td>
                 <td>${key || '--'}</td>
                 <td>${aiKey || '--'}</td>
-                <td>${composers || '--'}</td>
+                <td>${origin || '--'}</td>
                 <td>${fileLink ? `<a href="${fileLink}" target="_blank" style="color:#e65c00; font-weight:bold; text-decoration:none;">Open Link</a>` : '--'}</td>
             `;
             tbody.appendChild(tr);
