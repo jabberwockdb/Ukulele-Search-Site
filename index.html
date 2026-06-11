@@ -70,48 +70,46 @@
 </div>
 
 <script>
-    // Robust, cross-browser SHA-256 function using standard array operations
-    function createSecureHash(str) {
-        var buffer = new TextEncoder("utf-8").encode(str);
-        return crypto.subtle.digest("SHA-256", buffer).then(function (hash) {
-            return Array.prototype.map.call(new Uint8Array(hash), function (x) {
-                return ('00' + x.toString(16)).slice(-2);
-            }).join('');
-        });
+    // Helper function to turn any text into a standard SHA-256 hash string
+    async function getHash(text) {
+        const msgBuffer = new TextEncoder().encode(text);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    document.getElementById("loginForm").addEventListener("submit", function(event) {
+    document.getElementById("loginForm").addEventListener("submit", async function(event) {
         event.preventDefault();
         const submitBtn = document.getElementById("submitBtn");
         const cooldownMsg = document.getElementById("cooldownMsg");
         
-        const usernameInput = document.getElementById("username").value.trim().toLowerCase();
-        const passwordInput = document.getElementById("password").value.trim().toLowerCase();
+        // Clean inputs of extra whitespace and ignore capital letters
+        const userValue = document.getElementById("username").value.trim().toLowerCase();
+        const passValue = document.getElementById("password").value.trim().toLowerCase();
         
-        // Combine them into a single string to protect both fields at once
-        const secretCombination = usernameInput + ":" + passwordInput;
-        
-        // Hash the input dynamically
-        createSecureHash(secretCombination).then(function(hashedResult) {
-            // This is the clean, lowercase hash of the combined credentials
-            const targetToken = "78b456e343b679b38031e411b426615b3c5825bc5e7ee065b79e9da28800ff8a";
+        // Generate the secret hashes for what the user typed
+        const hashedUser = await getHash(userValue);
+        const hashedPass = await getHash(passValue);
 
-            if (hashedResult === targetToken) {
-                localStorage.setItem("uke_authenticated", "true");
-                window.location.href = "search.html";
-            } else {
-                alert("Invalid username or password!");
-                
-                // Trigger 3-second spam protection cooldown
-                submitBtn.disabled = true;
-                cooldownMsg.style.display = "block";
-                
-                setTimeout(() => {
-                    submitBtn.disabled = false;
-                    cooldownMsg.style.display = "none";
-                }, 3000);
-            }
-        });
+        // Independent target tokens
+        const correctUserHash = "440c26804a9f4fb8be58a0bf998960814917f8a7e04f0579af9e26217dfdf30d"; // 'ukulele'
+        const correctPassHash = "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d"; // 'friends'
+
+        if (hashedUser === correctUserHash && hashedPass === correctPassHash) {
+            localStorage.setItem("uke_authenticated", "true");
+            window.location.href = "search.html";
+        } else {
+            alert("Invalid username or password!");
+            
+            // 3-second security lock delay
+            submitBtn.disabled = true;
+            cooldownMsg.style.display = "block";
+            
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                cooldownMsg.style.display = "none";
+            }, 3000);
+        }
     });
 
     document.getElementById("googleLoginBtn").addEventListener("click", function() {
