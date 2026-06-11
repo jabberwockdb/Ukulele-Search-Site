@@ -4,15 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ukulele Song Database - Login</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
-            /* 3. RESTORED YOUR EXACT ORIGINAL BACKGROUND SETUP */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('sunset.png') no-repeat center center fixed;
             background-size: cover;
             height: 100vh;
@@ -20,8 +15,6 @@
             justify-content: center;
             align-items: center;
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
         }
         .login-container {
             background: white;
@@ -33,91 +26,31 @@
             box-sizing: border-box;
             text-align: center;
         }
-        h2 {
-            margin-bottom: 24px;
-            color: #333;
-            font-weight: 600;
-        }
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            color: #666;
-            font-size: 14px;
-        }
+        h2 { margin-bottom: 24px; color: #333; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 6px; color: #666; font-size: 14px; }
         input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
+            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px;
         }
         .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: #e65c00;
-            border: none;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
+            width: 100%; padding: 12px; background: #e65c00; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s;
         }
-        .login-btn:hover {
-            background: #cd5200;
-        }
-        .divider {
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #999;
-            font-size: 14px;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #ddd;
-        }
+        .login-btn:disabled { background: #cccccc; cursor: not-allowed; }
+        .divider { margin: 20px 0; display: flex; align-items: center; text-align: center; color: #999; font-size: 14px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #ddd; }
         .divider:not(:empty)::before { margin-right: .25em; }
         .divider:not(:empty)::after { margin-left: .25em; }
-        
         .google-btn {
-            width: 100%;
-            padding: 12px;
-            background: white;
-            border: 1px solid #ccc;
-            color: #555;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: background 0.2s;
+            width: 100%; padding: 12px; background: white; border: 1px solid #ccc; color: #555; font-size: 16px; font-weight: 600; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center;
         }
-        .google-btn:hover {
-            background: #f7f7f7;
-        }
-        /* Icon styling */
-        .google-btn i {
-            margin-right: 12px;
-            font-size: 18px;
-            color: #4285F4; /* Official Google Blue */
-        }
+        .google-btn i { margin-right: 12px; font-size: 18px; color: #4285F4; }
+        #cooldownMsg { color: #d9534f; font-size: 14px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="login-container">
     <h2>Ukulele Gateway</h2>
-    
     <form id="loginForm">
         <div class="input-group">
             <label for="username">Username</label>
@@ -127,38 +60,52 @@
             <label for="password">Password</label>
             <input type="password" id="password" placeholder="Enter password" required>
         </div>
-        <button type="submit" class="login-btn">Sign In</button>
+        <button type="submit" id="submitBtn" class="login-btn">Sign In</button>
+        <div id="cooldownMsg">Too many attempts. Please wait 3 seconds...</div>
     </form>
-
     <div class="divider">or</div>
-
     <button id="googleLoginBtn" class="google-btn">
-        <i class="fab fa-google"></i>
-        Sign in with Google
+        <i class="fab fa-google"></i> Sign in with Google
     </button>
 </div>
 
 <script>
-    document.getElementById("loginForm").addEventListener("submit", function(event) {
+    // Native secure hash matching 'ukulele:friends'
+    const targetHash = "78b456e343b679b38031e411b426615b3c5825bc5e7ee065b79e9da28800ff8a";
+
+    // Simple sha256 function without needing external libraries
+    async function sha256(string) {
+        const utf8 = new TextEncoder().encode(string);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async function(event) {
         event.preventDefault();
+        const submitBtn = document.getElementById("submitBtn");
+        const cooldownMsg = document.getElementById("cooldownMsg");
         
         const usernameInput = document.getElementById("username").value.trim();
         const passwordInput = document.getElementById("password").value.trim();
+        const combined = usernameInput + ":" + passwordInput;
+        
+        const hashed = await sha256(combined);
 
-        // Combine inputs using our invisible mashing strategy
-        const combinedString = usernameInput + ":" + passwordInput;
-
-        // Scramble using CryptoJS (Flawless cross-browser SHA-256 string matching)
-        const hashedCredentials = CryptoJS.SHA256(combinedString).toString();
-
-        // This hash precisely matches 'ukulele:friends'
-        const targetHash = "78b456e343b679b38031e411b426615b3c5825bc5e7ee065b79e9da28800ff8a";
-
-        if (hashedCredentials === targetHash) {
+        if (hashed === targetHash) {
             localStorage.setItem("uke_authenticated", "true");
             window.location.href = "search.html";
         } else {
             alert("Invalid username or password!");
+            
+            // Trigger 3-second cooldown rate limiting
+            submitBtn.disabled = true;
+            cooldownMsg.style.display = "block";
+            
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                cooldownMsg.style.display = "none";
+            }, 3000);
         }
     });
 
@@ -167,6 +114,5 @@
         window.location.href = "search.html";
     });
 </script>
-
 </body>
 </html>
