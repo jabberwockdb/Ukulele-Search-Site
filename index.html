@@ -70,35 +70,23 @@
 </div>
 
 <script>
-    // Native secure hash matching 'ukulele:friends'
-    const targetHash = "78b456e343b679b38031e411b426615b3c5825bc5e7ee065b79e9da28800ff8a";
-
-    // Simple sha256 function without needing external libraries
-    async function sha256(string) {
-        const utf8 = new TextEncoder().encode(string);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
         event.preventDefault();
         const submitBtn = document.getElementById("submitBtn");
         const cooldownMsg = document.getElementById("cooldownMsg");
         
-        const usernameInput = document.getElementById("username").value.trim();
-        const passwordInput = document.getElementById("password").value.trim();
-        const combined = usernameInput + ":" + passwordInput;
-        
-        const hashed = await sha256(combined);
+        // Grab inputs and make sure no accidental leading/trailing spaces break the check
+        const usernameInput = document.getElementById("username").value.trim().toLowerCase();
+        const passwordInput = document.getElementById("password").value.trim().toLowerCase();
 
-        if (hashed === targetHash) {
+        // Direct matching logic to completely bypass complex browser crypto errors
+        if (usernameInput === "ukulele" && passwordInput === "friends") {
             localStorage.setItem("uke_authenticated", "true");
             window.location.href = "search.html";
         } else {
             alert("Invalid username or password!");
             
-            // Trigger 3-second cooldown rate limiting
+            // Trigger 3-second spam protection cooldown
             submitBtn.disabled = true;
             cooldownMsg.style.display = "block";
             
