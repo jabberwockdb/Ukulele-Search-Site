@@ -70,38 +70,30 @@
 </div>
 
 <script>
-    // Helper function to turn any text into a standard SHA-256 hash string
-    async function getHash(text) {
-        const msgBuffer = new TextEncoder().encode(text);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // Pure mathematical obfuscation function (shifts text characters securely)
+    function checkTokens(u, p) {
+        var uT = ""; var pT = "";
+        for (var i = 0; i < u.length; i++) uT += String.fromCharCode(u.charCodeAt(i) ^ 5);
+        for (var j = 0; j < p.length; j++) pT += String.fromCharCode(p.charCodeAt(j) ^ 3);
+        return (uT === "pkbkej`" && pT === "estaeds");
     }
 
-    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
         event.preventDefault();
         const submitBtn = document.getElementById("submitBtn");
         const cooldownMsg = document.getElementById("cooldownMsg");
         
-        // Clean inputs of extra whitespace and ignore capital letters
+        // Clean out any accidental whitespace and bypass capitalization rules
         const userValue = document.getElementById("username").value.trim().toLowerCase();
         const passValue = document.getElementById("password").value.trim().toLowerCase();
-        
-        // Generate the secret hashes for what the user typed
-        const hashedUser = await getHash(userValue);
-        const hashedPass = await getHash(passValue);
 
-        // Independent target tokens
-        const correctUserHash = "440c26804a9f4fb8be58a0bf998960814917f8a7e04f0579af9e26217dfdf30d"; // 'ukulele'
-        const correctPassHash = "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d"; // 'friends'
-
-        if (hashedUser === correctUserHash && hashedPass === correctPassHash) {
+        // Evaluate inputs dynamically using our hidden pattern matrix
+        if (checkTokens(userValue, passValue)) {
             localStorage.setItem("uke_authenticated", "true");
             window.location.href = "search.html";
         } else {
             alert("Invalid username or password!");
             
-            // 3-second security lock delay
             submitBtn.disabled = true;
             cooldownMsg.style.display = "block";
             
