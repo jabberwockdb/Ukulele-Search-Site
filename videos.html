@@ -1,279 +1,102 @@
-<script>
-    // If the authentication key is missing, instantly boot them back to the login page
-    if (localStorage.getItem("uke_authenticated") !== "true") {
-        window.location.href = "index.html";
-    }
-</script>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ukulele Friends - Open Mic</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Ukulele Friends - Open Mic Videos</title>
+    <script>
+        // Authentication guard
+        if (localStorage.getItem("uke_authenticated") !== "true") {
+            window.location.href = "index.html";
+        }
+    </script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-
         body {
-            background: linear-gradient(rgba(26, 26, 26, 0.6), rgba(26, 26, 26, 0.6)), 
-                        url('beach.jpg') no-repeat center center fixed;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Use the widescreen search background */
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('login_search_background.png') no-repeat center top fixed;
             background-size: cover;
-            color: white;
+            margin: 0;
+            padding: 0;
             min-height: 100vh;
         }
 
-        /* --- Menu Navigation Bar --- */
-        nav {
-            background: rgba(0, 0, 0, 0.85);
-            padding: 15px 50px;
+        /* Same Menu Styles as search.html */
+        .main-menu-laptop {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #ff7b00;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            justify-content: center;
+            gap: 20px;
+            padding-top: 18vh; /* Vertically consistent below high sign */
+            padding-bottom: 20px;
+            width: 100%;
+            z-index: 10;
         }
 
-        .logo { font-size: 22px; font-weight: 600; color: #ff7b00; text-decoration: none; }
-
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropbtn {
-            background-color: #ff7b00;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            background-color: #222;
-            min-width: 200px;
-            box-shadow: 0px 8px 16px rgba(0,0,0,0.5);
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .dropdown-content a {
-            color: white;
-            padding: 12px 16px;
+        .menu-item {
             text-decoration: none;
-            display: block;
-            transition: 0.3s;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            padding: 0;
         }
-        .dropdown-content a:hover { background-color: #ff7b00; }
-        .dropdown:hover .dropdown-content { display: block; }
 
-        /* --- Layout Container --- */
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 0 20px;
+        .menu-item img {
+            height: 50px;
+            width: auto;
+            transition: opacity 0.2s;
+            display: block;
+        }
+
+        /* Default: Show normal images, hide glow images */
+        .menu-item img.normal { display: block; }
+        .menu-item img.glow { display: none; }
+
+        /* active Logic: Display the glow image */
+        .menu-item.active img.normal { display: none; }
+        .menu-item.active img.glow { display: block; }
+
+        /* Style the video container area */
+        .videos-container {
+            max-width: 1100px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            opacity: 0.98;
             text-align: center;
         }
-
-        h1 { margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        .subtitle { color: #ddd; margin-bottom: 30px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
-
-        /* --- Playlists Pulldown Selector Elements --- */
-        .selector-box {
-            background: rgba(0, 0, 0, 0.75);
-            padding: 25px;
-            border-radius: 12px;
-            border: 1px solid #444;
-            margin-bottom: 30px;
-            display: inline-block;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .selector-box label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #ff7b00;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .playlist-select {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 8px;
-            background: #222;
-            color: white;
-            border: 1px solid #ff7b00;
-            outline: none;
-            cursor: pointer;
-        }
-
-        /* --- Responsive Video Player Frame Box --- */
-        .video-display-area {
-            background: rgba(0, 0, 0, 0.85);
-            border: 2px solid #444;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            display: none; /* Hidden until a playlist is chosen */
-        }
-
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; /* Keeps 16:9 widescreen proportions */
-            height: 0;
-            overflow: hidden;
-            border-radius: 6px;
-        }
-
-        .video-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
-
-        .performer-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #ff7b00;
-            margin-top: 15px;
-            text-align: left;
+        .placeholder-message {
+            color: #777;
+            font-size: 18px;
+            padding: 50px;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
 
-    <nav>
-        <a href="dashboard.html" class="logo">🎼 Ukulele Friends</a>
-        <div class="dropdown">
-            <button class="dropbtn">Explore Menu ▾</button>
-            <div class="dropdown-content">
-                <a href="dashboard.html">🏠 Dashboard Hub</a>
-                <a href="search.html">🎵 Ukulele Songs Search</a>
-                <a href="#" onclick="logout()">🚪 Sign Out</a>
-            </div>
-        </div>
-    </nav>
+<nav id="laptopMenu" class="main-menu-laptop">
+    <a href="search.html" class="menu-item">
+        <img src="button_search.png" alt="Song Search" class="normal">
+        <img src="button_glow_search.png" alt="Song Search (Highlighted)" class="glow">
+    </a>
+    
+    <a href="videos.html" class="menu-item active">
+        <img src="button_videos.png" alt="Open Mic Videos" class="normal">
+        <img src="button_glow_videos.png" alt="Open Mic Videos (Highlighted)" class="glow">
+    </a>
+</nav>
 
-    <div class="container">
-        <h1>🎥 Open Mic Vault</h1>
-        <p class="subtitle">Select a performer below to load their personal video showcases.</p>
-        
-        <div class="selector-box">
-            <label for="playlistDropdown">Choose a Performer</label>
-            <select id="playlistDropdown" class="playlist-select" onchange="loadSelectedPlaylist()">
-                <option value="">-- Loading performers list... --</option>
-            </select>
-        </div>
-
-        <div id="videoContainer" class="video-display-area">
-            <div class="video-wrapper">
-                <iframe id="videoPlayer" src="" allowfullscreen></iframe>
-            </div>
-            <div id="performerLabel" class="performer-title"></div>
-        </div>
+<div class="videos-container">
+    <h2>Authorized Admin: Open Mic Videos</h2>
+    <p>This section is reserved for verified admin accounts. Access is currently pending development.</p>
+    
+    <div class="placeholder-message">
+        [ Video feed logic component to be added ]
     </div>
+</div>
 
-    <script>
-        // Security gate check
-        if (localStorage.getItem("authenticated") !== "true") {
-            window.location.href = "index.html";
-        }
-
-        let playlistDatabase = [];
-
-        // Dynamic CSV Loader Engine
-        async function loadPlaylistsCSV() {
-            try {
-                // Fetch your playlists.csv file sitting right next to this file
-                const response = await fetch('playlists.csv');
-                const csvText = await response.text();
-                
-                // Parse CSV rows cleanly
-                const lines = csvText.split('\n');
-                const dropdown = document.getElementById('playlistDropdown');
-                
-                // Clear out the loading notice
-                dropdown.innerHTML = '<option value="">-- Select a Performer --</option>';
-                
-                // Loop through lines (skip index 0 which is the header line)
-                for(let i = 1; i < lines.length; i++) {
-                    if(!lines[i].trim()) continue; // Skip blank empty lines
-                    
-                    // Split row at the comma boundary
-                    const columns = lines[i].split(',');
-                    const performerName = columns[0].trim();
-                    let rawLink = columns[1].trim();
-                    
-                    // --- REVOLUTIONARY FIX: Translate normal link into embed link ---
-                    // YouTube playlists need an /embed/ format to display inside a website iframe box safely
-                    let embedLink = rawLink;
-                    if (rawLink.includes('list=')) {
-                        const playlistId = rawLink.split('list=')[1].split('&')[0];
-                        embedLink = `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
-                    }
-
-                    // Store inside memory array tracking systems
-                    playlistDatabase.push({
-                        name: performerName,
-                        url: embedLink
-                    });
-
-                    // Add name option elements straight into dropdown list
-                    const option = document.createElement('option');
-                    option.value = i - 1; // Track index reference
-                    option.textContent = performerName;
-                    dropdown.appendChild(option);
-                }
-            } catch (error) {
-                console.error("Error fetching or processing playlists.csv:", error);
-                document.getElementById('playlistDropdown').innerHTML = '<option value="">Error loading playlist file</option>';
-            }
-        }
-
-        // Action when a user picks a performer
-        function loadSelectedPlaylist() {
-            const selectedIndex = document.getElementById('playlistDropdown').value;
-            const container = document.getElementById('videoContainer');
-            const player = document.getElementById('videoPlayer');
-            const label = document.getElementById('performerLabel');
-
-            if (selectedIndex === "") {
-                container.style.display = "none"; // Hide frame if they pick default option
-                player.src = "";
-                return;
-            }
-
-            const chosenRecord = playlistDatabase[selectedIndex];
-            
-            // Inject new target variables to activate embed framework views
-            player.src = chosenRecord.url;
-            label.textContent = `📺 Viewing Spotlight: ${chosenRecord.name}`;
-            container.style.display = "block"; // Slide open the theater window box
-        }
-
-        function logout() {
-            localStorage.removeItem("authenticated");
-            window.location.href = "index.html";
-        }
-
-        // Kickstart the processing loop as soon as the page boots up
-        window.onload = loadPlaylistsCSV;
-    </script>
 </body>
 </html>

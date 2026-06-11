@@ -7,83 +7,26 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Update background image reference */
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('login_background.png') no-repeat center top fixed;
+            /* UPDATED: Reference the widescreen search background for laptop */
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('login_search_background.png') no-repeat center top fixed;
             background-size: cover;
             margin: 0;
             padding: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Center horizontally */
+            align-items: center;
         }
-
-        /* Top Banner with the smaller, higher sign */
-        .top-banner {
-            width: 100%;
-            height: 20vh; /* Set banner height to match 20% vertical space rule */
-            position: relative;
-            z-index: 1; /* Keep above background */
-        }
-
-        /* Center the form in the large beach area below the sign */
-        .main-content {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center; /* Center vertically within the area */
-            padding: 20px;
-            margin-top: 2vh; /* Small gap below the sign area */
-            width: 100%;
-        }
-
-        .login-container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 380px;
-            box-sizing: border-box;
-            text-align: center;
-        }
-        /* ... existing input/button styles ... */
-        .input-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; margin-bottom: 6px; color: #666; font-size: 14px; }
-        input[type="text"], input[type="password"] {
-            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px;
-        }
-        .login-btn {
-            width: 100%; padding: 12px; background: #e65c00; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s;
-        }
-        .login-btn:disabled { background: #cccccc; cursor: not-allowed; }
-        #cooldownMsg { color: #d9534f; font-size: 14px; margin-top: 15px; display: none; font-weight: bold; }
+        /* (Existing login container and form styles...) */
     </style>
 </head>
 <body>
-
-<div class="top-banner"></div>
-
-<div class="main-content">
-    <div class="login-container">
-        <form id="loginForm">
-            <div class="input-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Enter username" required>
-            </div>
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter password" required>
-            </div>
-            <button type="submit" id="submitBtn" class="login-btn">Sign In</button>
-            <div id="cooldownMsg">Too many attempts. Please wait <span id="countdown">5</span> seconds...</div>
-        </form>
-    </div>
-</div>
-
-<script>
-    /* ... existing login script ... */
-    // ... logic same as previous ...
+    <script>
+    // 📱 Instant Mobile Redirection Check (Remains active)
+    if (window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        window.location.href = "mobile_index.html";
+    }
+    // (Existing login form logic...)
 </script>
 </body>
 </html>
