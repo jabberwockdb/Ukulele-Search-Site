@@ -23,39 +23,43 @@
             align-items: center;
         }
 
-        /* Positions menu container precisely 10px below the hanging sign bounds */
         .main-menu-laptop {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            padding-top: 34vh; 
+            gap: 20px;
+            padding-top: 36vh; 
             padding-bottom: 20px;
             width: 100%;
         }
 
-        .menu-item {
+        .menu-item-text {
             text-decoration: none;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            padding: 0;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 12px 35px;
+            border-radius: 8px;
+            color: #ffd699; 
+            background: rgba(90, 45, 20, 0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
         }
 
-        /* Forces button text onto one line by setting an explicit width auto scaling factor */
-        .menu-item img {
-            height: auto;
-            width: 240px; 
-            display: block;
+        .menu-item-text:hover {
+            background: rgba(140, 60, 20, 0.6);
+            color: #ffffff;
         }
 
-        .menu-item img.normal { display: block; }
-        .menu-item img.glow { display: none; }
-        .menu-item.active img.normal { display: none; }
-        .menu-item.active img.glow { display: block; }
+        .menu-item-text.active {
+            color: #ffffff; 
+            background: rgba(230, 92, 0, 0.75); 
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
 
         .search-container {
-            width: 92%;
-            max-width: 1150px;
+            width: 95%;
+            max-width: 1200px;
             background: rgba(255, 255, 255, 0.96);
             padding: 30px;
             border-radius: 12px;
@@ -66,7 +70,7 @@
 
         .search-instructions {
             font-size: 16px;
-            color: #333;
+            color: #222;
             font-weight: bold;
             margin-bottom: 12px;
             text-align: left;
@@ -87,9 +91,8 @@
             box-sizing: border-box;
         }
 
-        /* Custom UI Search Submission Action Button */
         .search-submit-btn {
-            padding: 0 30px;
+            padding: 0 35px;
             background: #e65c00;
             border: none;
             color: white;
@@ -116,6 +119,7 @@
             font-weight: 600;
             text-align: left;
             font-size: 15px;
+            vertical-align: middle;
         }
         td {
             padding: 12px;
@@ -123,6 +127,7 @@
             color: #333;
             font-size: 14px;
             height: 22px;
+            vertical-align: middle;
         }
         tr.placeholder-row td {
             color: #ddd;
@@ -132,21 +137,15 @@
 <body>
 
 <nav class="main-menu-laptop">
-    <a href="search.html" class="menu-item active">
-        <img src="button_search.png" alt="Song Search" class="normal">
-        <img src="button_glow_search.png" alt="Song Search (Highlighted)" class="glow">
-    </a>
-    <a href="videos.html" class="menu-item">
-        <img src="button_videos.png" alt="Open Mic Videos" class="normal">
-        <img src="button_glow_videos.png" alt="Open Mic Videos (Highlighted)" class="glow">
-    </a>
+    <a href="search.html" class="menu-item-text active">Song Search</a>
+    <a href="videos.html" class="menu-item-text">Open Mic Videos</a>
 </nav>
 
 <div class="search-container">
     <div class="search-instructions">Please enter key word to search among any fields below.</div>
     
     <div class="search-row">
-        <input type="text" id="searchInput" class="search-box" placeholder="Type terms here..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="searchInput" class="search-box" placeholder="Type search terms here..." onkeypress="handleKeyPress(event)">
         <button class="search-submit-btn" onclick="processMultiTermSearch()">Search</button>
     </div>
 
@@ -154,10 +153,10 @@
         <thead>
             <tr>
                 <th style="width: 30%;">Title</th>
-                <th style="width: 25%;">Artist</th>
-                <th style="width: 25%;">Album</th>
+                <th style="width: 30%;">Composers</th>
                 <th style="width: 10%;">Key</th>
-                <th style="width: 10%;">File Link</th>
+                <th style="width: 12%;">AI<br>Key</th>
+                <th style="width: 18%;">Origin</th>
             </tr>
         </thead>
         <tbody id="resultsTableBody">
@@ -168,7 +167,7 @@
 <script>
     let songDatabase = [];
 
-    // Renders the 10-row baseline grid framework on window load
+    // Initializes exactly 10 empty placeholder lines on layout execution load
     function initEmptyGrid() {
         const tbody = document.getElementById("resultsTableBody");
         tbody.innerHTML = "";
@@ -181,13 +180,14 @@
     }
     window.onload = initEmptyGrid;
 
-    // Load database safely
+    // Load layout database CSV elements securely
     Papa.parse("database.csv", {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
             songDatabase = results.data;
+            console.log("Database load connection verify: active rows detected -> " + songDatabase.length);
         }
     });
 
@@ -197,7 +197,18 @@
         }
     }
 
-    // Fixed Multi-Term Matching Engine Logic
+    // Advanced key helper mapping layout engine
+    function getFieldValue(row, cleanFieldName) {
+        for (let originalKey in row) {
+            let standardKey = originalKey.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+            if (standardKey === cleanFieldName) {
+                return row[originalKey] ? row[originalKey].toString().trim() : "";
+            }
+        }
+        return "";
+    }
+
+    // Precise Targeted Matrix Text Searching Engine
     function processMultiTermSearch() {
         const query = document.getElementById("searchInput").value.trim().toLowerCase();
         const tbody = document.getElementById("resultsTableBody");
@@ -208,13 +219,22 @@
             return;
         }
 
-        // Tokenize search array terms by space delimiters
+        // Tokenize search string keywords cleanly by spaces
         const searchTerms = query.split(/\s+/);
 
         const matchedSongs = songDatabase.filter(song => {
-            // Evaluates row data values across all headers combined
-            const combinedRowText = Object.values(song).join(" ").toLowerCase();
-            return searchTerms.every(term => combinedRowText.includes(term));
+            // Isolating specifically the exact structural column targets requested
+            const titleValue = getFieldValue(song, "title").toLowerCase();
+            const composersValue = getFieldValue(song, "composers").toLowerCase();
+            const keyValue = getFieldValue(song, "key").toLowerCase();
+            const aiKeyValue = getFieldValue(song, "aiguessedkey").toLowerCase() || getFieldValue(song, "aikey").toLowerCase();
+            const originValue = getFieldValue(song, "origin").toLowerCase();
+
+            // Combined search space targeted strictly to your requested content
+            const combinedTargetSpace = `${titleValue} ${composersValue} ${keyValue} ${aiKeyValue} ${originValue}`;
+
+            // Verified condition check matrix: EVERY single keyword must exist inside this combined target text block
+            return searchTerms.every(term => combinedTargetSpace.includes(term));
         });
 
         if (matchedSongs.length === 0) {
@@ -225,19 +245,18 @@
             matchedSongs.forEach(song => {
                 const tr = document.createElement("tr");
                 
-                // Maps properties safely to fallback alternatives if fields are blank
-                const title = song.Title || song.title || '';
-                const artist = song.Artist || song.artist || '';
-                const album = song.Album || song.album || '';
-                const key = song.Key || song.key || '';
-                const link = song.FileLink || song.filelink || song.Link || song.link || '';
+                const title = getFieldValue(song, "title");
+                const composers = getFieldValue(song, "composers");
+                const key = getFieldValue(song, "key");
+                const aiKey = getFieldValue(song, "aiguessedkey") || getFieldValue(song, "aikey");
+                const origin = getFieldValue(song, "origin");
 
                 tr.innerHTML = `
-                    <td><strong>${title}</strong></td>
-                    <td>${artist}</td>
-                    <td>${album}</td>
-                    <td>${key}</td>
-                    <td>${link ? `<a href="${link}" target="_blank" style="color:#e65c00; font-weight:bold; text-decoration:none;">Open File</a>` : '--'}</td>
+                    <td><strong>${title || '--'}</strong></td>
+                    <td>${composers || '--'}</td>
+                    <td>${key || '--'}</td>
+                    <td>${aiKey || '--'}</td>
+                    <td>${origin || '--'}</td>
                 `;
                 tbody.appendChild(tr);
             });
