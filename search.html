@@ -23,7 +23,6 @@
             align-items: center;
         }
 
-        /* Adjusted vertical placement to align perfectly under the sign */
         .main-menu-laptop {
             display: flex;
             justify-content: center;
@@ -69,12 +68,27 @@
             margin-bottom: 40px;
         }
 
+        .search-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
         .search-instructions {
             font-size: 16px;
             color: #222;
             font-weight: bold;
-            margin-bottom: 12px;
             text-align: left;
+        }
+
+        .version-tag {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+            background: #e0e0e0;
+            padding: 4px 10px;
+            border-radius: 4px;
         }
 
         .search-row {
@@ -143,7 +157,10 @@
 </nav>
 
 <div class="search-container">
-    <div class="search-instructions">Please enter key word to search among any fields below.</div>
+    <div class="search-header-row">
+        <div class="search-instructions">Please enter key word to search among any fields below.</div>
+        <div class="version-tag">Version 10</div>
+    </div>
     
     <div class="search-row">
         <input type="text" id="searchInput" class="search-box" placeholder="Type search terms here..." onkeypress="handleKeyPress(event)">
@@ -169,7 +186,6 @@
 <script>
     let songDatabase = [];
 
-    // Generates exactly 10 initial clean blank visual grid lines on window load
     function initEmptyGrid() {
         const tbody = document.getElementById("resultsTableBody");
         tbody.innerHTML = "";
@@ -182,16 +198,51 @@
     }
     window.onload = initEmptyGrid;
 
-    // Load spreadsheet rows seamlessly using PapaParse framework
+    // Upgraded retrieval architecture forcing a text stream configuration parse
     Papa.parse("database.csv", {
         download: true,
         header: true,
         skipEmptyLines: true,
+        parseAs: "text",
         complete: function(results) {
-            songDatabase = results.data;
-            console.log("Database initialized. Loaded row matrix count: " + songDatabase.length);
+            if (results.data && results.data.length > 0) {
+                songDatabase = results.data;
+                console.log("Database initialized natively via PapaParse. Rows: " + songDatabase.length);
+            } else {
+                fallbackManualCSVParse(results.userText || "");
+            }
+        },
+        error: function() {
+            // Backup connection pipeline fetch if PapaParse encounters server security rules
+            fetch("database.csv")
+                .then(response => response.text())
+                .then(text => fallbackManualCSVParse(text))
+                .catch(err => console.error("Database connection fault sequence encountered.", err));
         }
     });
+
+    // Fallback parser guarantees text splitting even if server protocols block standard library functions
+    function fallbackManualCSVParse(text) {
+        if (!text) return;
+        const lines = text.split(/\r?\n/);
+        if (lines.length < 2) return;
+        
+        const headers = lines[0].split(",");
+        songDatabase = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            
+            // Simple comma split mapping
+            const cells = lines[i].split(",");
+            let rowObj = {};
+            headers.forEach((header, index) => {
+                rowObj[header.trim()] = cells[index] ? cells[index].trim() : "";
+            });
+            songDatabase.push(rowObj);
+        }
+        console.log("Database successfully populated using manual fallback parser. Rows: " + songDatabase.length);
+    }
 
     function handleKeyPress(event) {
         if (event.key === "Enter") {
@@ -199,7 +250,6 @@
         }
     }
 
-    // Precise Target-Field Multi-Word Engine
     function processMultiTermSearch() {
         const query = document.getElementById("searchInput").value.trim().toLowerCase();
         const tbody = document.getElementById("resultsTableBody");
@@ -210,24 +260,19 @@
             return;
         }
 
-        // Split search terms cleanly by space characters
         const searchTerms = query.split(/\s+/);
 
         const matchedSongs = songDatabase.filter(song => {
-            // Bind fields directly to your exact CSV header names
-            const title = (song["Title"] || "").toString().trim().toLowerCase();
-            const origin = (song["Origin"] || "").toString().trim().toLowerCase();
-            const key = (song["Key"] || "").toString().trim().toLowerCase();
-            const aiKey = (song["AI_Guessed_Key"] || "").toString().trim().toLowerCase();
-            const composers = (song["Composers"] || "").toString().trim().toLowerCase();
+            const title = (song["Title"] || "").toString().toLowerCase();
+            const origin = (song["Origin"] || "").toString().toLowerCase();
+            const key = (song["Key"] || "").toString().toLowerCase();
+            const aiKey = (song["AI_Guessed_Key"] || "").toString().toLowerCase();
+            const composers = (song["Composers"] || "").toString().toLowerCase();
 
-            // Ignore blank rows completely
             if (!title && !origin && !key && !aiKey && !composers) return false;
 
-            // Group only your target display headers for the multi-word check
             const targetedSearchText = `${title} ${origin} ${key} ${aiKey} ${composers}`;
 
-            // Check condition: Every separate keyword must exist in this specific row array
             return searchTerms.every(term => targetedSearchText.includes(term));
         });
 
