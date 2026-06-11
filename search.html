@@ -13,7 +13,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25)), url('login_search_background.png') no-repeat center top fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('login_search_background.png') no-repeat center top fixed;
             background-size: cover;
             margin: 0;
             padding: 0;
@@ -23,13 +23,13 @@
             align-items: center;
         }
 
-        /* Nav menu sits exactly below the hanging sign */
+        /* Positions menu container precisely 10px below the hanging sign bounds */
         .main-menu-laptop {
             display: flex;
             justify-content: center;
-            gap: 25px;
-            padding-top: 33vh; 
-            padding-bottom: 15px;
+            gap: 30px;
+            padding-top: 34vh; 
+            padding-bottom: 20px;
             width: 100%;
         }
 
@@ -41,10 +41,10 @@
             padding: 0;
         }
 
-        /* Fixed image button sizing constraints keeping text strictly on one line */
+        /* Forces button text onto one line by setting an explicit width auto scaling factor */
         .menu-item img {
-            height: 65px; /* Scaled up for clearer reading text layout */
-            width: auto;
+            height: auto;
+            width: 240px; 
             display: block;
         }
 
@@ -54,40 +54,60 @@
         .menu-item.active img.glow { display: block; }
 
         .search-container {
-            width: 90%;
+            width: 92%;
             max-width: 1150px;
             background: rgba(255, 255, 255, 0.96);
-            padding: 25px;
+            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             box-sizing: border-box;
             margin-bottom: 40px;
         }
 
         .search-instructions {
             font-size: 16px;
-            color: #444;
-            font-weight: 600;
+            color: #333;
+            font-weight: bold;
             margin-bottom: 12px;
             text-align: left;
         }
 
+        .search-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
         .search-box {
-            width: 100%;
+            flex: 1;
             padding: 14px;
-            font-size: 17px;
+            font-size: 16px;
             border: 2px solid #cc5200;
             border-radius: 6px;
             box-sizing: border-box;
-            margin-bottom: 20px;
         }
 
-        /* Database placeholder grid layout settings */
+        /* Custom UI Search Submission Action Button */
+        .search-submit-btn {
+            padding: 0 30px;
+            background: #e65c00;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-submit-btn:hover {
+            background: #cc5200;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-            background: #white;
+            background: white;
         }
         th {
             background: #e65c00;
@@ -102,11 +122,10 @@
             border-bottom: 1px solid #eee;
             color: #333;
             font-size: 14px;
-            height: 20px;
+            height: 22px;
         }
         tr.placeholder-row td {
-            color: #ccc;
-            font-style: italic;
+            color: #ddd;
         }
     </style>
 </head>
@@ -124,17 +143,21 @@
 </nav>
 
 <div class="search-container">
-    <div class="search-instructions">Please enter key word to search among any fields below:</div>
-    <input type="text" id="searchInput" class="search-box" placeholder="Type your search terms here..." oninput="processMultiTermSearch()">
+    <div class="search-instructions">Please enter key word to search among any fields below.</div>
+    
+    <div class="search-row">
+        <input type="text" id="searchInput" class="search-box" placeholder="Type terms here..." onkeypress="handleKeyPress(event)">
+        <button class="search-submit-btn" onclick="processMultiTermSearch()">Search</button>
+    </div>
 
     <table>
         <thead>
             <tr>
-                <th style="width: 25%;">Title</th>
+                <th style="width: 30%;">Title</th>
                 <th style="width: 25%;">Artist</th>
-                <th style="width: 20%;">Album</th>
-                <th style="width: 15%;">Key</th>
-                <th style="width: 15%;">File Link</th>
+                <th style="width: 25%;">Album</th>
+                <th style="width: 10%;">Key</th>
+                <th style="width: 10%;">File Link</th>
             </tr>
         </thead>
         <tbody id="resultsTableBody">
@@ -145,33 +168,36 @@
 <script>
     let songDatabase = [];
 
-    // Initialize 10 empty structural rows with column indicators on window load
+    // Renders the 10-row baseline grid framework on window load
     function initEmptyGrid() {
         const tbody = document.getElementById("resultsTableBody");
         tbody.innerHTML = "";
         for (let i = 0; i < 10; i++) {
             const tr = document.createElement("tr");
             tr.className = "placeholder-row";
-            tr.innerHTML = `<td>--</td><td>--</td><td>--</td><td>--</td><td>--</td>`;
+            tr.innerHTML = `<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`;
             tbody.appendChild(tr);
         }
     }
     window.onload = initEmptyGrid;
 
-    // Load CSV file safely
+    // Load database safely
     Papa.parse("database.csv", {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
             songDatabase = results.data;
-        },
-        error: function() {
-            console.log("Database fetch standby initialization status active.");
         }
     });
 
-    // Advanced Cross-Field Multi-Term Logic Algorithm
+    function handleKeyPress(event) {
+        if (event.key === "Enter") {
+            processMultiTermSearch();
+        }
+    }
+
+    // Fixed Multi-Term Matching Engine Logic
     function processMultiTermSearch() {
         const query = document.getElementById("searchInput").value.trim().toLowerCase();
         const tbody = document.getElementById("resultsTableBody");
@@ -182,29 +208,36 @@
             return;
         }
 
-        // Parse individual search terms separated by spaces
+        // Tokenize search array terms by space delimiters
         const searchTerms = query.split(/\s+/);
 
-        // Filter database rows where EVERY search term matches AT LEAST ONE field in that row
         const matchedSongs = songDatabase.filter(song => {
-            const rowBlob = Object.values(song).join(" ").toLowerCase();
-            return searchTerms.every(term => rowBlob.includes(term));
+            // Evaluates row data values across all headers combined
+            const combinedRowText = Object.values(song).join(" ").toLowerCase();
+            return searchTerms.every(term => combinedRowText.includes(term));
         });
 
-        // Display results
         if (matchedSongs.length === 0) {
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td colspan="5" style="text-align:center; color:#999; font-style:italic; padding:30px;">No matching records found.</td>`;
+            tr.innerHTML = `<td colspan="5" style="text-align:center; color:#888; font-style:italic; padding:40px;">No matching records found.</td>`;
             tbody.appendChild(tr);
         } else {
             matchedSongs.forEach(song => {
                 const tr = document.createElement("tr");
+                
+                // Maps properties safely to fallback alternatives if fields are blank
+                const title = song.Title || song.title || '';
+                const artist = song.Artist || song.artist || '';
+                const album = song.Album || song.album || '';
+                const key = song.Key || song.key || '';
+                const link = song.FileLink || song.filelink || song.Link || song.link || '';
+
                 tr.innerHTML = `
-                    <td><strong>${song.Title || ''}</strong></td>
-                    <td>${song.Artist || ''}</td>
-                    <td>${song.Album || ''}</td>
-                    <td>${song.Key || ''}</td>
-                    <td>${song.FileLink ? `<a href="${song.FileLink}" target="_blank" style="color:#e65c00; font-weight:bold; text-decoration:none;">Open File</a>` : '--'}</td>
+                    <td><strong>${title}</strong></td>
+                    <td>${artist}</td>
+                    <td>${album}</td>
+                    <td>${key}</td>
+                    <td>${link ? `<a href="${link}" target="_blank" style="color:#e65c00; font-weight:bold; text-decoration:none;">Open File</a>` : '--'}</td>
                 `;
                 tbody.appendChild(tr);
             });
