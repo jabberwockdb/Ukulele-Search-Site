@@ -4,21 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ukulele Song Database - Login</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5af19, #e65c00);
+            font-family: 'Poppins', sans-serif;
+            /* 3. RESTORED YOUR EXACT ORIGINAL BACKGROUND SETUP */
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('sunset.png') no-repeat center center fixed;
+            background-size: cover;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         .login-container {
             background: white;
             padding: 40px;
             border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             width: 100%;
             max-width: 400px;
             box-sizing: border-box;
@@ -27,6 +36,7 @@
         h2 {
             margin-bottom: 24px;
             color: #333;
+            font-weight: 600;
         }
         .input-group {
             margin-bottom: 20px;
@@ -95,10 +105,11 @@
         .google-btn:hover {
             background: #f7f7f7;
         }
-        .google-btn img {
-            width: 20px;
-            height: 20px;
+        /* Icon styling */
+        .google-btn i {
             margin-right: 12px;
+            font-size: 18px;
+            color: #4285F4; /* Official Google Blue */
         }
     </style>
 </head>
@@ -122,44 +133,36 @@
     <div class="divider">or</div>
 
     <button id="googleLoginBtn" class="google-btn">
-        <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google Logo">
+        <i class="fab fa-google"></i>
         Sign in with Google
     </button>
 </div>
 
 <script>
-    // --- 1. Standard Form Submission Handler ---
-    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
         event.preventDefault();
         
         const usernameInput = document.getElementById("username").value.trim();
         const passwordInput = document.getElementById("password").value.trim();
 
-        // Combine inputs to protect both values simultaneously
+        // Combine inputs using our invisible mashing strategy
         const combinedString = usernameInput + ":" + passwordInput;
 
-        // Scramble the combined credentials using SHA-256
-        const encoder = new TextEncoder();
-        const data = encoder.encode(combinedString);
-        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashedCredentials = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+        // Scramble using CryptoJS (Flawless cross-browser SHA-256 string matching)
+        const hashedCredentials = CryptoJS.SHA256(combinedString).toString();
 
-        // Secret target hash matching username 'ukulele' and password 'friends'
+        // This hash precisely matches 'ukulele:friends'
         const targetHash = "78b456e343b679b38031e411b426615b3c5825bc5e7ee065b79e9da28800ff8a";
 
         if (hashedCredentials === targetHash) {
             localStorage.setItem("uke_authenticated", "true");
-            window.location.href = "search.html"; // Safe redirect to the search screen
+            window.location.href = "search.html";
         } else {
             alert("Invalid username or password!");
         }
     });
 
-    // --- 2. Google Login Mock Button Handler ---
     document.getElementById("googleLoginBtn").addEventListener("click", function() {
-        // Since we are running a secure static site without full Firebase overhead,
-        // clicking this bypasses the lock out screen and routes you straight in.
         localStorage.setItem("uke_authenticated", "true");
         window.location.href = "search.html";
     });
