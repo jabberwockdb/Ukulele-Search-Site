@@ -94,7 +94,7 @@
         .search-row {
             display: flex;
             gap: 15px;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
 
         .search-box {
@@ -120,6 +120,22 @@
 
         .search-submit-btn:hover {
             background: #cc5200;
+        }
+
+        #alertContainer {
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .limit-alert {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: left;
         }
 
         table {
@@ -158,14 +174,16 @@
 
 <div class="search-container">
     <div class="search-header-row">
-        <div class="search-instructions">Please enter key word to search among any fields below.</div>
-        <div class="version-tag">Version 10</div>
+        <div class="search-instructions">Please enter search terms to search among any fields below:</div>
+        <div class="version-tag">Version 12</div>
     </div>
     
     <div class="search-row">
         <input type="text" id="searchInput" class="search-box" placeholder="Type search terms here..." onkeypress="handleKeyPress(event)">
         <button class="search-submit-btn" onclick="processMultiTermSearch()">Search</button>
     </div>
+
+    <div id="alertContainer"></div>
 
     <table>
         <thead>
@@ -186,7 +204,9 @@
 <script>
     let songDatabase = [];
 
+    // Initializes the 10 empty structural display rows on startup
     function initEmptyGrid() {
+        document.getElementById("alertContainer").style.display = "none";
         const tbody = document.getElementById("resultsTableBody");
         tbody.innerHTML = "";
         for (let i = 0; i < 10; i++) {
@@ -198,51 +218,19 @@
     }
     window.onload = initEmptyGrid;
 
-    // Upgraded retrieval architecture forcing a text stream configuration parse
-    Papa.parse("database.csv", {
+    // TARGET FILE RESTORATION: Re-bound directly to your actual CSV filename asset
+    Papa.parse("v13_uke_songs.csv", {
         download: true,
         header: true,
         skipEmptyLines: true,
-        parseAs: "text",
         complete: function(results) {
-            if (results.data && results.data.length > 0) {
-                songDatabase = results.data;
-                console.log("Database initialized natively via PapaParse. Rows: " + songDatabase.length);
-            } else {
-                fallbackManualCSVParse(results.userText || "");
-            }
+            songDatabase = results.data;
+            console.log("Database initialized. Total items caught: " + songDatabase.length);
         },
-        error: function() {
-            // Backup connection pipeline fetch if PapaParse encounters server security rules
-            fetch("database.csv")
-                .then(response => response.text())
-                .then(text => fallbackManualCSVParse(text))
-                .catch(err => console.error("Database connection fault sequence encountered.", err));
+        error: function(err) {
+            console.error("Critical fallback network path triggered for song file extraction.", err);
         }
     });
-
-    // Fallback parser guarantees text splitting even if server protocols block standard library functions
-    function fallbackManualCSVParse(text) {
-        if (!text) return;
-        const lines = text.split(/\r?\n/);
-        if (lines.length < 2) return;
-        
-        const headers = lines[0].split(",");
-        songDatabase = [];
-        
-        for (let i = 1; i < lines.length; i++) {
-            if (!lines[i].trim()) continue;
-            
-            // Simple comma split mapping
-            const cells = lines[i].split(",");
-            let rowObj = {};
-            headers.forEach((header, index) => {
-                rowObj[header.trim()] = cells[index] ? cells[index].trim() : "";
-            });
-            songDatabase.push(rowObj);
-        }
-        console.log("Database successfully populated using manual fallback parser. Rows: " + songDatabase.length);
-    }
 
     function handleKeyPress(event) {
         if (event.key === "Enter") {
@@ -250,58 +238,88 @@
         }
     }
 
+    // Dynamic Header Resolution Engine: Normalizes keys to prevent mapping drops due to unseen spaces or formatting discrepancies
+    function extractCSVValue(rowObj, targetedHeaderName) {
+        const cleanTarget = targetedHeaderName.toLowerCase().replace(/[^a-z0-9]/g, "");
+        for (let originalKey in rowObj) {
+            const cleanKey = originalKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+            if (cleanKey === cleanTarget) {
+                return rowObj[originalKey] ? rowObj[originalKey].toString().trim() : "";
+            }
+        }
+        return "";
+    }
+
     function processMultiTermSearch() {
         const query = document.getElementById("searchInput").value.trim().toLowerCase();
         const tbody = document.getElementById("resultsTableBody");
+        const alertContainer = document.getElementById("alertContainer");
+        
         tbody.innerHTML = "";
+        alertContainer.style.display = "none";
+        alertContainer.innerHTML = "";
 
         if (query === "") {
             initEmptyGrid();
             return;
         }
 
+        // Tokenize search array queries into separate space-delimited string terms
         const searchTerms = query.split(/\s+/);
 
         const matchedSongs = songDatabase.filter(song => {
-            const title = (song["Title"] || "").toString().toLowerCase();
-            const origin = (song["Origin"] || "").toString().toLowerCase();
-            const key = (song["Key"] || "").toString().toLowerCase();
-            const aiKey = (song["AI_Guessed_Key"] || "").toString().toLowerCase();
-            const composers = (song["Composers"] || "").toString().toLowerCase();
+            // Target search fields mapped flexibly by internal normalizer keys
+            const title = extractCSVValue(song, "title").toLowerCase();
+            const origin = extractCSVValue(song, "origin").toLowerCase();
+            const key = extractCSVValue(song, "key").toLowerCase();
+            const aiKey = extractCSVValue(song, "aiguessedkey").toLowerCase();
+            const composers = extractCSVValue(song, "composers").toLowerCase();
 
             if (!title && !origin && !key && !aiKey && !composers) return false;
 
-            const targetedSearchText = `${title} ${origin} ${key} ${aiKey} ${composers}`;
+            // Target search space limited strictly to your requested content variables
+            const compositeTargetString = `${title} ${origin} ${key} ${aiKey} ${composers}`;
 
-            return searchTerms.every(term => targetedSearchText.includes(term));
+            // Verification Rule: Every word typed must look and exist here anywhere inside this row block
+            return searchTerms.every(term => compositeTargetString.includes(term));
         });
 
         if (matchedSongs.length === 0) {
             const tr = document.createElement("tr");
             tr.innerHTML = `<td colspan="6" style="text-align:center; color:#888; font-style:italic; padding:40px;">No matching records found.</td>`;
             tbody.appendChild(tr);
-        } else {
-            matchedSongs.forEach(song => {
-                const tr = document.createElement("tr");
-                
-                const title = song["Title"] || "";
-                const origin = song["Origin"] || "";
-                const key = song["Key"] || "";
-                const aiKey = song["AI_Guessed_Key"] || "";
-                const composers = song["Composers"] || "";
-                const fileLink = song["Link"] || ""; 
-
-                tr.innerHTML = `
-                    <td><strong>${title}</strong></td>
-                    <td>${origin || '--'}</td>
-                    <td>${key || '--'}</td>
-                    <td>${aiKey || '--'}</td>
-                    <td>${composers || '--'}</td>
-                    <td>${fileLink ? `<a href="${fileLink}" target="_blank" style="color:#e65c00; font-weight:bold; text-decoration:none;">Open Link</a>` : '--'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+            return;
         }
+
+        // Handling Threshold Limit Check Guardrail for responses over 50 items
+        let displayList = matchedSongs;
+        if (matchedSongs.length > 50) {
+            alertContainer.innerHTML = `<div class="limit-alert">⚠️ Showing first 50 results of ${matchedSongs.length} total matches found. Please add more specific keywords to refine your search.</div>`;
+            alertContainer.style.display = "block";
+            displayList = matchedSongs.slice(0, 50);
+        }
+
+        // Append matching songs up to your target display limit safely
+        displayList.forEach(song => {
+            const tr = document.createElement("tr");
+            
+            const title = extractCSVValue(song, "title");
+            const origin = extractCSVValue(song, "origin");
+            const key = extractCSVValue(song, "key");
+            const aiKey = extractCSVValue(song, "aiguessedkey");
+            const composers = extractCSVValue(song, "composers");
+            const fileLink = extractCSVValue(song, "link"); 
+
+            tr.innerHTML = `
+                <td><strong>${title}</strong></td>
+                <td>${origin || '--'}</td>
+                <td>${key || '--'}</td>
+                <td>${aiKey || '--'}</td>
+                <td>${composers || '--'}</td>
+                <td>${fileLink ? `<a href="${fileLink}" target="_blank" style="color:#e65c00; font-weight:bold; text-decoration:none;">Open Link</a>` : '--'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 </script>
 
