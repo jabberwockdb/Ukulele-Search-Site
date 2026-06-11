@@ -70,25 +70,23 @@
 </div>
 
 <script>
-    // Pure mathematical obfuscation function (shifts text characters securely)
-    function checkTokens(u, p) {
-        var uT = ""; var pT = "";
-        for (var i = 0; i < u.length; i++) uT += String.fromCharCode(u.charCodeAt(i) ^ 5);
-        for (var j = 0; j < p.length; j++) pT += String.fromCharCode(p.charCodeAt(j) ^ 3);
-        return (uT === "pkbkej`" && pT === "estaeds");
-    }
-
     document.getElementById("loginForm").addEventListener("submit", function(event) {
         event.preventDefault();
         const submitBtn = document.getElementById("submitBtn");
         const cooldownMsg = document.getElementById("cooldownMsg");
         
-        // Clean out any accidental whitespace and bypass capitalization rules
         const userValue = document.getElementById("username").value.trim().toLowerCase();
         const passValue = document.getElementById("password").value.trim().toLowerCase();
 
-        // Evaluate inputs dynamically using our hidden pattern matrix
-        if (checkTokens(userValue, passValue)) {
+        // Convert the inputs to standard base64 strings
+        const encodedUser = btoa(userValue);
+        const encodedPass = btoa(passValue);
+
+        // Obfuscated string tokens matching the intended credentials
+        const uTarget = "dWt1bGVsZQ==";
+        const pTarget = "ZnJpZW5kcw==";
+
+        if (encodedUser === uTarget && encodedPass === pTarget) {
             localStorage.setItem("uke_authenticated", "true");
             window.location.href = "search.html";
         } else {
