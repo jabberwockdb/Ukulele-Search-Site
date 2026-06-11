@@ -6,7 +6,6 @@
     <title>Ukulele Friends - Song Search</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
-        // Authentication guard
         if (localStorage.getItem("uke_authenticated") !== "true") {
             window.location.href = "index.html";
         }
@@ -14,27 +13,24 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Use the new widescreen search background */
-            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('login_search_background.png') no-repeat center top fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25)), url('login_search_background.png') no-repeat center top fixed;
             background-size: cover;
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* 💻 The New Laptop Image-Button Menu */
+        /* Nav menu sits exactly below the hanging sign */
         .main-menu-laptop {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            
-            /* Vertical Positioning Logic: */
-            /* 1. Sign is high in the 16:9 image. Setting top padding to 18vh centers the menu below the sign and leaves clear content area. */
-            /* 2. vh units are dynamic and mobile-friendly. */
-            padding-top: 18vh;
-            padding-bottom: 20px;
+            gap: 25px;
+            padding-top: 33vh; 
+            padding-bottom: 15px;
             width: 100%;
-            z-index: 10;
         }
 
         .menu-item {
@@ -45,44 +41,82 @@
             padding: 0;
         }
 
-        /* Set base properties for all image buttons */
+        /* Fixed image button sizing constraints keeping text strictly on one line */
         .menu-item img {
-            height: 50px; /* Fixed height makes calculation predictable */
+            height: 65px; /* Scaled up for clearer reading text layout */
             width: auto;
-            transition: opacity 0.2s;
             display: block;
         }
 
-        /* Default state: Hide the 'Glow' images */
         .menu-item img.normal { display: block; }
         .menu-item img.glow { display: none; }
-
-        /* Highlight Logic: If parent anchor has 'active' class, display the glow image */
         .menu-item.active img.normal { display: none; }
         .menu-item.active img.glow { display: block; }
 
-        /* Existing Search Content Container and Table Styles */
         .search-container {
-            max-width: 1100px;
-            margin: 20px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 1150px;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
             box-sizing: border-box;
-            opacity: 0.98; /* Adds subtle background bleed */
+            margin-bottom: 40px;
         }
-        /* (Remaining existing search page styles...) */
+
+        .search-instructions {
+            font-size: 16px;
+            color: #444;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px;
+            font-size: 17px;
+            border: 2px solid #cc5200;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        /* Database placeholder grid layout settings */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: #white;
+        }
+        th {
+            background: #e65c00;
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+            text-align: left;
+            font-size: 15px;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            color: #333;
+            font-size: 14px;
+            height: 20px;
+        }
+        tr.placeholder-row td {
+            color: #ccc;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
 
-<nav id="laptopMenu" class="main-menu-laptop">
+<nav class="main-menu-laptop">
     <a href="search.html" class="menu-item active">
         <img src="button_search.png" alt="Song Search" class="normal">
         <img src="button_glow_search.png" alt="Song Search (Highlighted)" class="glow">
     </a>
-    
     <a href="videos.html" class="menu-item">
         <img src="button_videos.png" alt="Open Mic Videos" class="normal">
         <img src="button_glow_videos.png" alt="Open Mic Videos (Highlighted)" class="glow">
@@ -90,11 +124,92 @@
 </nav>
 
 <div class="search-container">
-    </div>
+    <div class="search-instructions">Please enter key word to search among any fields below:</div>
+    <input type="text" id="searchInput" class="search-box" placeholder="Type your search terms here..." oninput="processMultiTermSearch()">
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Title</th>
+                <th style="width: 25%;">Artist</th>
+                <th style="width: 20%;">Album</th>
+                <th style="width: 15%;">Key</th>
+                <th style="width: 15%;">File Link</th>
+            </tr>
+        </thead>
+        <tbody id="resultsTableBody">
+            </tbody>
+    </table>
+</div>
 
 <script>
-    // (Existing Papaparse database initialization fault handling...)
-    // (Existing searchSongs() logic...)
+    let songDatabase = [];
+
+    // Initialize 10 empty structural rows with column indicators on window load
+    function initEmptyGrid() {
+        const tbody = document.getElementById("resultsTableBody");
+        tbody.innerHTML = "";
+        for (let i = 0; i < 10; i++) {
+            const tr = document.createElement("tr");
+            tr.className = "placeholder-row";
+            tr.innerHTML = `<td>--</td><td>--</td><td>--</td><td>--</td><td>--</td>`;
+            tbody.appendChild(tr);
+        }
+    }
+    window.onload = initEmptyGrid;
+
+    // Load CSV file safely
+    Papa.parse("database.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            songDatabase = results.data;
+        },
+        error: function() {
+            console.log("Database fetch standby initialization status active.");
+        }
+    });
+
+    // Advanced Cross-Field Multi-Term Logic Algorithm
+    function processMultiTermSearch() {
+        const query = document.getElementById("searchInput").value.trim().toLowerCase();
+        const tbody = document.getElementById("resultsTableBody");
+        tbody.innerHTML = "";
+
+        if (query === "") {
+            initEmptyGrid();
+            return;
+        }
+
+        // Parse individual search terms separated by spaces
+        const searchTerms = query.split(/\s+/);
+
+        // Filter database rows where EVERY search term matches AT LEAST ONE field in that row
+        const matchedSongs = songDatabase.filter(song => {
+            const rowBlob = Object.values(song).join(" ").toLowerCase();
+            return searchTerms.every(term => rowBlob.includes(term));
+        });
+
+        // Display results
+        if (matchedSongs.length === 0) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td colspan="5" style="text-align:center; color:#999; font-style:italic; padding:30px;">No matching records found.</td>`;
+            tbody.appendChild(tr);
+        } else {
+            matchedSongs.forEach(song => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${song.Title || ''}</strong></td>
+                    <td>${song.Artist || ''}</td>
+                    <td>${song.Album || ''}</td>
+                    <td>${song.Key || ''}</td>
+                    <td>${song.FileLink ? `<a href="${song.FileLink}" target="_blank" style="color:#e65c00; font-weight:bold; text-decoration:none;">Open File</a>` : '--'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    }
 </script>
 
 </body>
