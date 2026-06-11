@@ -23,11 +23,12 @@
             align-items: center;
         }
 
+        /* Adjusted vertical placement to align perfectly under the sign */
         .main-menu-laptop {
             display: flex;
             justify-content: center;
             gap: 20px;
-            padding-top: 36vh; 
+            padding-top: 42vh; 
             padding-bottom: 20px;
             width: 100%;
         }
@@ -152,11 +153,12 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 30%;">Title</th>
-                <th style="width: 30%;">Composers</th>
+                <th style="width: 25%;">Title</th>
+                <th style="width: 25%;">Origin</th>
                 <th style="width: 10%;">Key</th>
                 <th style="width: 12%;">AI<br>Key</th>
-                <th style="width: 18%;">Origin</th>
+                <th style="width: 18%;">Composers</th>
+                <th style="width: 10%;">File Link</th>
             </tr>
         </thead>
         <tbody id="resultsTableBody">
@@ -167,27 +169,27 @@
 <script>
     let songDatabase = [];
 
-    // Initializes exactly 10 empty placeholder lines on layout execution load
+    // Generates exactly 10 initial clean blank visual grid lines on window load
     function initEmptyGrid() {
         const tbody = document.getElementById("resultsTableBody");
         tbody.innerHTML = "";
         for (let i = 0; i < 10; i++) {
             const tr = document.createElement("tr");
             tr.className = "placeholder-row";
-            tr.innerHTML = `<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`;
+            tr.innerHTML = `<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`;
             tbody.appendChild(tr);
         }
     }
     window.onload = initEmptyGrid;
 
-    // Load layout database CSV elements securely
+    // Load spreadsheet rows seamlessly using PapaParse framework
     Papa.parse("database.csv", {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
             songDatabase = results.data;
-            console.log("Database load connection verify: active rows detected -> " + songDatabase.length);
+            console.log("Database initialized. Loaded row matrix count: " + songDatabase.length);
         }
     });
 
@@ -197,18 +199,7 @@
         }
     }
 
-    // Advanced key helper mapping layout engine
-    function getFieldValue(row, cleanFieldName) {
-        for (let originalKey in row) {
-            let standardKey = originalKey.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-            if (standardKey === cleanFieldName) {
-                return row[originalKey] ? row[originalKey].toString().trim() : "";
-            }
-        }
-        return "";
-    }
-
-    // Precise Targeted Matrix Text Searching Engine
+    // Precise Target-Field Multi-Word Engine
     function processMultiTermSearch() {
         const query = document.getElementById("searchInput").value.trim().toLowerCase();
         const tbody = document.getElementById("resultsTableBody");
@@ -219,44 +210,49 @@
             return;
         }
 
-        // Tokenize search string keywords cleanly by spaces
+        // Split search terms cleanly by space characters
         const searchTerms = query.split(/\s+/);
 
         const matchedSongs = songDatabase.filter(song => {
-            // Isolating specifically the exact structural column targets requested
-            const titleValue = getFieldValue(song, "title").toLowerCase();
-            const composersValue = getFieldValue(song, "composers").toLowerCase();
-            const keyValue = getFieldValue(song, "key").toLowerCase();
-            const aiKeyValue = getFieldValue(song, "aiguessedkey").toLowerCase() || getFieldValue(song, "aikey").toLowerCase();
-            const originValue = getFieldValue(song, "origin").toLowerCase();
+            // Bind fields directly to your exact CSV header names
+            const title = (song["Title"] || "").toString().trim().toLowerCase();
+            const origin = (song["Origin"] || "").toString().trim().toLowerCase();
+            const key = (song["Key"] || "").toString().trim().toLowerCase();
+            const aiKey = (song["AI_Guessed_Key"] || "").toString().trim().toLowerCase();
+            const composers = (song["Composers"] || "").toString().trim().toLowerCase();
 
-            // Combined search space targeted strictly to your requested content
-            const combinedTargetSpace = `${titleValue} ${composersValue} ${keyValue} ${aiKeyValue} ${originValue}`;
+            // Ignore blank rows completely
+            if (!title && !origin && !key && !aiKey && !composers) return false;
 
-            // Verified condition check matrix: EVERY single keyword must exist inside this combined target text block
-            return searchTerms.every(term => combinedTargetSpace.includes(term));
+            // Group only your target display headers for the multi-word check
+            const targetedSearchText = `${title} ${origin} ${key} ${aiKey} ${composers}`;
+
+            // Check condition: Every separate keyword must exist in this specific row array
+            return searchTerms.every(term => targetedSearchText.includes(term));
         });
 
         if (matchedSongs.length === 0) {
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td colspan="5" style="text-align:center; color:#888; font-style:italic; padding:40px;">No matching records found.</td>`;
+            tr.innerHTML = `<td colspan="6" style="text-align:center; color:#888; font-style:italic; padding:40px;">No matching records found.</td>`;
             tbody.appendChild(tr);
         } else {
             matchedSongs.forEach(song => {
                 const tr = document.createElement("tr");
                 
-                const title = getFieldValue(song, "title");
-                const composers = getFieldValue(song, "composers");
-                const key = getFieldValue(song, "key");
-                const aiKey = getFieldValue(song, "aiguessedkey") || getFieldValue(song, "aikey");
-                const origin = getFieldValue(song, "origin");
+                const title = song["Title"] || "";
+                const origin = song["Origin"] || "";
+                const key = song["Key"] || "";
+                const aiKey = song["AI_Guessed_Key"] || "";
+                const composers = song["Composers"] || "";
+                const fileLink = song["Link"] || ""; 
 
                 tr.innerHTML = `
-                    <td><strong>${title || '--'}</strong></td>
-                    <td>${composers || '--'}</td>
+                    <td><strong>${title}</strong></td>
+                    <td>${origin || '--'}</td>
                     <td>${key || '--'}</td>
                     <td>${aiKey || '--'}</td>
-                    <td>${origin || '--'}</td>
+                    <td>${composers || '--'}</td>
+                    <td>${fileLink ? `<a href="${fileLink}" target="_blank" style="color:#e65c00; font-weight:bold; text-decoration:none;">Open Link</a>` : '--'}</td>
                 `;
                 tbody.appendChild(tr);
             });
