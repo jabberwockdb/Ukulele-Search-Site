@@ -11,7 +11,7 @@
         }
     </script>
     <style>
-        /* Block master canvas from scrolling globally; internal containers handle individual layouts */
+        /* Prevents master canvas from scrolling; internal panels control layout views */
         html, body {
             margin: 0;
             padding: 0;
@@ -30,7 +30,7 @@
             align-items: center;
         }
 
-        /* 1. PERMANENTLY STATIONARY TOP ZONE: Locked in view, never scrolls */
+        /* 1. PERMANENTLY STATIONARY TOP ZONE */
         .stationary-top-zone {
             width: 100%;
             display: flex;
@@ -78,7 +78,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Upper Structural Header - Height increased to stabilize lookups with/without dev tools open */
+        /* Upper Structural Header Control Component */
         .header-control-zone {
             width: 96%;
             max-width: 1200px;
@@ -91,21 +91,21 @@
             justify-content: center;
         }
 
-        /* Stationary Left Sidebar Frame: Aligns cleanly to the bottom edge of the wooden sign */
+        /* Left Sources Sidebar Window Box Framework */
         .left-sources-sidebar {
             position: absolute;
             left: 0;
             top: 10px; 
-            height: 135px; /* Proportional expansion room to avoid baseline layout overlap */
+            height: 135px; 
             display: flex;
             flex-direction: column;
-            background: rgba(40, 20, 5, 0.82); /* Darkened opacity to maximize word readability */
+            background: rgba(40, 20, 5, 0.82); 
             padding: 10px 14px;
             border-radius: 8px;
             width: 260px;
             box-sizing: border-box;
             border: 1px solid rgba(255, 214, 153, 0.3);
-            z-index: 200; /* Forces visibility over invisible canvas layer maps */
+            z-index: 200; 
         }
 
         .sidebar-header-wrapper {
@@ -134,11 +134,11 @@
             margin-left: 5px;
         }
 
-        /* Dynamic Tray Scrolling Track - Holds child anchor tags safely */
+        /* Independent Inner Sidebar Scrolling Viewport Track */
         .sources-scroll-tray {
             flex-grow: 1; 
             overflow-y: auto;
-            display: block; /* Switched to traditional block grid to guarantee layout structure text height */
+            display: block; 
             padding-right: 4px;
         }
 
@@ -150,18 +150,18 @@
             border-radius: 3px;
         }
 
-        /* Corrected Text Wrapper - Structural properties added to prevent text from folding or disappearing */
+        /* Fixed Anchor Link Text Element Blocks */
         .source-anchor-link {
             color: #ffffff !important; 
             text-decoration: none !important;
             font-size: 13px;
             font-weight: 600;
-            line-height: 18px; /* Strict baseline height alignment forces letters out */
+            line-height: 18px; 
             margin-bottom: 6px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            display: block; /* Forces line-breaks and structural box modeling */
+            display: block; 
             text-align: left;
             text-shadow: 1px 1px 2px rgba(0,0,0,1);
             transition: all 0.12s ease-in-out;
@@ -174,7 +174,7 @@
             transform: translateX(3px);
         }
 
-        /* Branding Sign Container Box wrapper */
+        /* Central Wooden Branding Sign Graphic Frame */
         .center-sign-asset {
             display: flex;
             align-items: center;
@@ -185,7 +185,7 @@
             z-index: 50; 
         }
 
-        /* 2. DYNAMIC BOTTOM SCROLL ZONE: Flows seamlessly downstream */
+        /* 2. DYNAMIC BOTTOM SCROLL ZONE */
         .dynamic-bottom-scroll-zone {
             width: 100%;
             flex: 1; 
@@ -203,7 +203,7 @@
             border-radius: 4px;
         }
 
-        /* Main Search Container Box - Scales dynamically with row length */
+        /* Search Box Canvas Container */
         .search-container-box {
             background-color: #fff;
             border-radius: 8px;
@@ -271,7 +271,7 @@
             font-weight: 600;
         }
 
-        /* Results Grid Frame Viewport Wrapper */
+        /* Data Matrix Grid Scroll Box */
         .table-scroll-container {
             width: 100%;
             border: 1px solid #ddd;
@@ -350,7 +350,7 @@
         <div class="left-sources-sidebar">
             <div class="sidebar-header-wrapper">
                 <span class="sidebar-label">Sources</span>
-                <span class="sidebar-version-tag">v49</span>
+                <span class="sidebar-version-tag">v50</span>
             </div>
             <div id="sourcesScrollTray" class="sources-scroll-tray">
                 <span style="color:#eee; font-size:11px; font-style:italic;">Processing song library...</span>
@@ -406,7 +406,6 @@
     const tbody = document.getElementById("resultsTableBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Populates exactly 10 initial rows beautifully without overflow limits
     function initEmptyGrid() {
         alertBanner.style.display = "none";
         tbody.innerHTML = "";
@@ -431,7 +430,7 @@
         return "";
     }
 
-    // Explicit Hardcoded Redirect Routing Translation Matrix
+    // Hardcoded URL Mapper Core Engine
     function assignHardcodedSourceUrl(sourceName) {
         const name = sourceName.toLowerCase().trim();
 
@@ -464,10 +463,39 @@
             return "https://ukejams.com/songs/";
         }
         
-        return "#"; 
+        return ""; 
     }
 
-    // Compiles, processes, and pushes visible links into the independent scroll tray
+    // Dynamic Fallback Evaluator: Extracts the parent directory path if a direct URL definition is absent
+    function discoverBaseFolderUrl(sourceName, records) {
+        const hardcodedValue = assignHardcodedSourceUrl(sourceName);
+        if (hardcodedValue !== "") return hardcodedValue;
+
+        // Searches records for the first occurrence of this source to steal its direct document address path
+        const matchingRecord = records.find(row => {
+            const src = extractCSVValue(row, "Source");
+            return src && src.trim().toLowerCase() === sourceName.toLowerCase().trim();
+        });
+
+        if (matchingRecord) {
+            const sampleDocUrl = extractCSVValue(matchingRecord, "Link");
+            if (sampleDocUrl && (sampleDocUrl.startsWith("http://") || sampleDocUrl.startsWith("https://"))) {
+                try {
+                    // Strips off the specific PDF name string to isolate the folder web index
+                    const lastSlashPointer = sampleDocUrl.lastIndexOf('/');
+                    if (lastSlashPointer > 8) {
+                        return sampleDocUrl.substring(0, lastSlashPointer + 1);
+                    }
+                    return sampleDocUrl;
+                } catch(e) {
+                    return "#";
+                }
+            }
+        }
+        return "#";
+    }
+
+    // Parses and compiles sources into the menu list tracker
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
         records.forEach(row => {
@@ -482,16 +510,16 @@
 
         const sortedSources = Array.from(sourceMap.keys()).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
         if (sortedSources.length === 0) {
-            sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:12px;'>No sources detected.</span>";
+            sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:12px;'>No sources found.</span>";
             return;
         }
 
         sourcesScrollTray.innerHTML = "";
         sortedSources.forEach(sourceName => {
-            const customTargetUrl = assignHardcodedSourceUrl(sourceName);
+            const calculatedTargetUrl = discoverBaseFolderUrl(sourceName, records);
 
             const anchor = document.createElement("a");
-            anchor.href = customTargetUrl;
+            anchor.href = calculatedTargetUrl;
             anchor.target = "_blank";
             anchor.className = "source-anchor-link";
             anchor.textContent = sourceName;
@@ -568,7 +596,7 @@
         });
     }
 
-    Papa.parse("v13_uke_songs.csv?v=49", {
+    Papa.parse("v13_uke_songs.csv?v=50", {
         download: true,
         header: true,
         skipEmptyLines: true,
