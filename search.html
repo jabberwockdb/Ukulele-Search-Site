@@ -11,13 +11,13 @@
         }
     </script>
     <style>
-        /* Restores natural page canvas flow with scrolling restricted as desired */
+        /* Block master canvas from scrolling globally; individual sections will handle layout flow */
         html, body {
             margin: 0;
             padding: 0;
-            min-height: 100vh;
-            overflow-x: hidden;
-            overflow-y: auto; 
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             box-sizing: border-box;
         }
@@ -30,6 +30,17 @@
             align-items: center;
         }
 
+        /* 1. PERMANENTLY STATIONARY TOP ZONE: Never moves, scrolls, or shifts */
+        .stationary-top-zone {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+            background: transparent;
+            z-index: 100;
+        }
+
         /* Top Navigation Button Strip Zone */
         .top-navigation-bar {
             width: 100%;
@@ -38,10 +49,8 @@
             justify-content: center;
             align-items: center;
             gap: 20px;
-            z-index: 120;
             padding-top: 5px;
             background: rgba(0, 0, 0, 0.15);
-            flex-shrink: 0;
         }
 
         .menu-item-text {
@@ -69,44 +78,45 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Header Layout Area Component */
+        /* Upper Structural Header Flex Grid Layout */
         .header-control-zone {
             width: 96%;
             max-width: 1200px;
-            height: 160px; 
-            position: relative;
-            z-index: 100;
+            height: 125px; 
             margin-top: 10px;
+            margin-bottom: 5px;
+            position: relative;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
         }
 
-        /* Relocated Left Sidebar Frame: Restored gracefully to the upper left layout grid */
+        /* Stationary Left Sidebar Frame: Capped strictly to align perfectly with the wooden sign height */
         .left-sources-sidebar {
             position: absolute;
             left: 0;
             top: 0; 
-            bottom: 0;
+            height: 115px; /* Hard-capped perfectly to lock alignment with bottom of the wooden sign */
             display: flex;
             flex-direction: column;
-            background: rgba(40, 20, 5, 0.5); 
-            padding: 12px;
+            background: rgba(40, 20, 5, 0.65); 
+            padding: 10px 12px;
             border-radius: 8px;
             width: 250px;
             box-sizing: border-box;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 110; /* Elevated layer index forces text elements above background vectors */
         }
 
         .sidebar-header-wrapper {
-            margin-bottom: 8px;
-            flex-shrink: 0; /* Keeps the word "Sources" locked to the top */
+            margin-bottom: 6px;
+            flex-shrink: 0; 
             border-bottom: 1px solid rgba(255, 214, 153, 0.3);
-            padding-bottom: 4px;
+            padding-bottom: 3px;
         }
 
         .sidebar-label {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             color: #ffd699;
             text-transform: uppercase;
@@ -124,26 +134,26 @@
             margin-left: 5px;
         }
 
-        /* Dynamic Tray Scrolling Track - Scrolls if item count extends past header sign box */
+        /* Dynamic Tray Scrolling Track - Contained internally inside the fixed boundary window */
         .sources-scroll-tray {
             flex-grow: 1; 
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
             padding-right: 4px;
         }
 
         .sources-scroll-tray::-webkit-scrollbar {
-            width: 4px;
+            width: 5px;
         }
         .sources-scroll-tray::-webkit-scrollbar-thumb {
-            background: rgba(230, 92, 0, 0.7);
-            border-radius: 2px;
+            background: rgba(230, 92, 0, 0.8);
+            border-radius: 3px;
         }
 
         .source-anchor-link {
-            color: #ffffff;
+            color: #ffffff !important; /* Forces visible white coloration overriding container defaults */
             text-decoration: none;
             font-size: 12px;
             font-weight: 600;
@@ -157,20 +167,41 @@
         }
 
         .source-anchor-link:hover {
-            color: #ffd699;
+            color: #ffd699 !important;
             text-decoration: underline;
             transform: translateX(2px);
         }
 
+        /* Branding Sign Container Box wrapper */
         .center-sign-asset {
             display: flex;
             align-items: center;
             justify-content: center;
             pointer-events: none;
-            height: 100%;
+            height: 115px;
+            width: 380px;
+            z-index: 50; /* Keeps it clear from bleeding into sidebar interaction boxes */
         }
 
-        /* Main Search Container Box Component - Set to fluid auto height to allow natural extension flow */
+        /* 2. DYNAMIC BOTTOM SCROLL ZONE: Stretches and flows downward seamlessly */
+        .dynamic-bottom-scroll-zone {
+            width: 100%;
+            flex: 1; 
+            overflow-y: auto; /* Handles master table frame expansion scrolling safely */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dynamic-bottom-scroll-zone::-webkit-scrollbar {
+            width: 8px;
+        }
+        .dynamic-bottom-scroll-zone::-webkit-scrollbar-thumb {
+            background: rgba(230, 92, 0, 0.6);
+            border-radius: 4px;
+        }
+
+        /* Main Search Container Box Component - Flows seamlessly to match 10 baseline layout rows */
         .search-container-box {
             background-color: #fff;
             border-radius: 8px;
@@ -179,11 +210,12 @@
             max-width: 1200px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             box-sizing: border-box;
-            margin-top: 15px;
+            margin-top: 5px;
             margin-bottom: 40px;
             display: flex;
             flex-direction: column;
-            height: auto; /* Replaces strict clamping to let your grid flow completely naturally */
+            height: auto; /* Fluid height allows grid rows to expand without getting cut short */
+            flex-shrink: 0;
         }
 
         .search-instruction-text {
@@ -237,7 +269,7 @@
             font-weight: 600;
         }
 
-        /* Data Grid Table Wrapper Viewport - Automatically drops down to reveal 10+ rows without vertical scrolling cut-offs */
+        /* Results Data Grid Matrix Framework Wrapper Viewport */
         .table-scroll-container {
             width: 100%;
             border: 1px solid #ddd;
@@ -266,7 +298,7 @@
             border-bottom: 1px solid #eee;
             font-size: 14px;
             color: #333;
-            height: 22px; /* Uniform height baseline guarantee */
+            height: 22px; 
             vertical-align: middle;
         }
 
@@ -306,58 +338,63 @@
 </head>
 <body>
 
-<div class="top-navigation-bar">
-    <a href="search.html" class="menu-item-text active">Song Search</a>
-    <a href="videos.html" class="menu-item-text">Open Mic Videos</a>
+<div class="stationary-top-zone">
+    <div class="top-navigation-bar">
+        <a href="search.html" class="menu-item-text active">Song Search</a>
+        <a href="videos.html" class="menu-item-text">Open Mic Videos</a>
+    </div>
+
+    <div class="header-control-zone">
+        <div class="left-sources-sidebar">
+            <div class="sidebar-header-wrapper">
+                <span class="sidebar-label">Sources</span>
+                <span class="sidebar-version-tag">v48</span>
+            </div>
+            <div id="sourcesScrollTray" class="sources-scroll-tray">
+                <span style="color:#eee; font-size:11px; font-style:italic;">Processing song library...</span>
+            </div>
+        </div>
+        
+        <div class="center-sign-asset">
+            <div style="width:380px; height:115px; background:url('ukulele_friends_sign.png') no-repeat center; background-size:contain;"></div>
+        </div>
+    </div>
 </div>
 
-<div class="header-control-zone">
-    <div class="left-sources-sidebar">
-        <div class="sidebar-header-wrapper">
-            <span class="sidebar-label">Sources</span>
-            <span class="sidebar-version-tag">v47</span>
+<div class="dynamic-bottom-scroll-zone">
+
+    <div class="search-container-box">
+        <span class="search-instruction-text">Please enter search terms to search among any fields below:</span>
+        
+        <div class="search-interactive-row">
+            <input type="text" id="searchInput" class="search-input-field" placeholder="Search by title, source, key..." onkeyup="handleKeyPress(event)">
+            <button class="search-execution-button" onclick="processMultiTermSearch()">Search</button>
         </div>
-        <div id="sourcesScrollTray" class="sources-scroll-tray">
-            <span style="color:#eee; font-size:11px; font-style:italic;">Processing song library...</span>
+
+        <div id="alertBanner" class="matches-alert-banner"></div>
+
+        <div class="table-scroll-container">
+            <table class="results-data-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Title</th>
+                        <th style="width: 25%;">Composers</th>
+                        <th style="width: 8%;">Key*</th>
+                        <th style="width: 8%;">AI Key*</th>
+                        <th style="width: 14%;">Source</th>
+                        <th style="width: 10%;">File Link</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                </tbody>
+            </table>
         </div>
-    </div>
-    
-    <div class="center-sign-asset">
-        <img src="https://images.squarespace-cdn.com/content/v1/60da0ec2f472eb2cb9842a12/460fb4ca-be78-4cf6-ba93-da4867d9657b/ukulele_friends_sign.png" style="display:none;" onerror="this.style.display='none';">
-        <div style="width:380px; height:115px; background:url('ukulele_friends_sign.png') no-repeat center; background-size:contain;"></div>
-    </div>
-</div>
 
-<div class="search-container-box">
-    <span class="search-instruction-text">Please enter search terms to search among any fields below:</span>
-    
-    <div class="search-interactive-row">
-        <input type="text" id="searchInput" class="search-input-field" placeholder="Search by title, source, key..." onkeyup="handleKeyPress(event)">
-        <button class="search-execution-button" onclick="processMultiTermSearch()">Search</button>
+        <span class="footnote-annotation">
+            * = The Key is derived from the Title or the pdf name. The AI key uses a program to try to read the last chord in the pdf. The program can be wrong if it doesn't find the last chord. Or if the song doesn't end on its key chord.
+        </span>
     </div>
 
-    <div id="alertBanner" class="matches-alert-banner"></div>
-
-    <div class="table-scroll-container">
-        <table class="results-data-table" id="resultsTable">
-            <thead>
-                <tr>
-                    <th style="width: 35%;">Title</th>
-                    <th style="width: 25%;">Composers</th>
-                    <th style="width: 8%;">Key*</th>
-                    <th style="width: 8%;">AI Key*</th>
-                    <th style="width: 14%;">Source</th>
-                    <th style="width: 10%;">File Link</th>
-                </tr>
-            </thead>
-            <tbody id="resultsTableBody">
-            </tbody>
-        </table>
-    </div>
-
-    <span class="footnote-annotation">
-        * = The Key is derived from the Title or the pdf name. The AI key uses a program to try to read the last chord in the pdf. The program can be wrong if it doesn't find the last chord. Or if the song doesn't end on its key chord.
-    </span>
 </div>
 
 <script>
@@ -367,7 +404,7 @@
     const tbody = document.getElementById("resultsTableBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Rebuilds and mounts exactly 10 spacious rows to guarantee a clean layout framework
+    // Instantiates exactly 10 clean spacious columns on initialization
     function initEmptyGrid() {
         alertBanner.style.display = "none";
         tbody.innerHTML = "";
@@ -392,7 +429,7 @@
         return "";
     }
 
-    // Custom Target URL Mapping Rule Router Exception Engine
+    // Explicit Source URL Translation Mapping Matrix
     function assignHardcodedSourceUrl(sourceName) {
         const name = sourceName.toLowerCase().trim();
 
@@ -402,7 +439,6 @@
         if (name.includes("two chord song workbook")) {
             return "https://www.scukes.org/doc/two_chord_song_workbook_11.pdf";
         }
-        // Sequential lookups for numbered scukes books
         if (name.includes("sun city uke book")) {
             const match = name.match(/book\s*(\d+)/);
             if (match && match[1]) {
@@ -429,7 +465,7 @@
         return "#"; 
     }
 
-    // Processes, cross-checks, and populates your interactive Sources panel
+    // Processes, alphabetical-sorts, and loads links into your independent scrolling tray
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
         records.forEach(row => {
@@ -444,7 +480,7 @@
 
         const sortedSources = Array.from(sourceMap.keys()).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
         if (sortedSources.length === 0) {
-            sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:11px;'>No unique sources cataloged.</span>";
+            sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:11px;'>No sources parsed.</span>";
             return;
         }
 
@@ -530,7 +566,7 @@
         });
     }
 
-    Papa.parse("v13_uke_songs.csv?v=47", {
+    Papa.parse("v13_uke_songs.csv?v=48", {
         download: true,
         header: true,
         skipEmptyLines: true,
