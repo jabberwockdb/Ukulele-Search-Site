@@ -2,13 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Ukulele Friends - Song Search</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         if (localStorage.getItem("uke_authenticated") !== "true") {
             window.location.href = "index.html";
         }
+
+        // Mobile Address Bar Minimization Kick Routine
+        window.addEventListener("load", function() {
+            setTimeout(function() {
+                window.scrollTo(0, 1);
+            }, 100);
+        });
     </script>
     <style>
         /* Prevents master canvas from scrolling; internal panels control layout views */
@@ -30,6 +39,28 @@
             align-items: center;
         }
 
+        /* Responsive Landscape Advisory Banner for Mobile Devices */
+        .orientation-alert-banner {
+            display: none;
+            width: 100%;
+            background-color: #ffcc00;
+            color: #000;
+            text-align: center;
+            padding: 8px 10px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        /* Display warning banner only when on small screen profiles in portrait view */
+        @media screen and (max-device-width: 768px) and (orientation: portrait) {
+            .orientation-alert-banner {
+                display: block;
+            }
+        }
+
         /* 1. PERMANENTLY STATIONARY TOP ZONE */
         .stationary-top-zone {
             width: 100%;
@@ -41,7 +72,7 @@
             z-index: 100;
         }
 
-        /* Top Navigation Button Strip */
+        /* Top Navigation Button Strip Zone */
         .top-navigation-bar {
             width: 100%;
             height: 45px;
@@ -283,25 +314,40 @@
         .results-data-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed; /* Added to strictly enforce percentage cell widths */
         }
 
         .results-data-table th {
             background-color: #e65c00;
             color: white;
-            padding: 12px;
+            padding: 8px 6px;
             font-size: 14px;
-            text-align: left;
             font-weight: 600;
             border-bottom: 2px solid #cc5200;
+            vertical-align: middle;
+        }
+
+        /* Force centered headings above centered data zones */
+        .results-data-table th.center-header,
+        .results-data-table td.center-data {
+            text-align: center;
+        }
+
+        .results-data-table th.left-header,
+        .results-data-table td.left-data {
+            text-align: left;
         }
 
         .results-data-table td {
-            padding: 11px 12px;
+            padding: 11px 8px;
             border-bottom: 1px solid #eee;
             font-size: 14px;
             color: #333;
             height: 22px; 
             vertical-align: middle;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .results-data-table tr:last-child td {
@@ -340,6 +386,8 @@
 </head>
 <body>
 
+<div class="orientation-alert-banner">🔄 For the best viewing experience, please rotate your device to Landscape view.</div>
+
 <div class="stationary-top-zone">
     <div class="top-navigation-bar">
         <a href="search.html" class="menu-item-text active">Song Search</a>
@@ -350,7 +398,7 @@
         <div class="left-sources-sidebar">
             <div class="sidebar-header-wrapper">
                 <span class="sidebar-label">Sources</span>
-                <span class="sidebar-version-tag">v50</span>
+                <span class="sidebar-version-tag">v52</span>
             </div>
             <div id="sourcesScrollTray" class="sources-scroll-tray">
                 <span style="color:#eee; font-size:11px; font-style:italic;">Processing song library...</span>
@@ -379,12 +427,12 @@
             <table class="results-data-table" id="resultsTable">
                 <thead>
                     <tr>
-                        <th style="width: 35%;">Title</th>
-                        <th style="width: 25%;">Composers</th>
-                        <th style="width: 8%;">Key*</th>
-                        <th style="width: 8%;">AI Key*</th>
-                        <th style="width: 14%;">Source</th>
-                        <th style="width: 10%;">File Link</th>
+                        <th class="left-header" style="width: 35%;">Title</th>
+                        <th class="left-header" style="width: 25%;">Composers</th>
+                        <th class="center-header" style="width: 6%;">Key*</th>
+                        <th class="center-header" style="width: 6%; line-height: 1.2;">AI<br>Key*</th>
+                        <th class="left-header" style="width: 16%;">Source</th>
+                        <th class="center-header" style="width: 12%;">File Link</th>
                     </tr>
                 </thead>
                 <tbody id="resultsTableBody">
@@ -412,7 +460,7 @@
         for (let i = 0; i < 10; i++) {
             const tr = document.createElement("tr");
             tr.className = "placeholder-row";
-            tr.innerHTML = `<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`;
+            tr.innerHTML = `<td class="left-data">&nbsp;</td><td class="left-data">&nbsp;</td><td class="center-data">&nbsp;</td><td class="center-data">&nbsp;</td><td class="left-data">&nbsp;</td><td class="center-data">&nbsp;</td>`;
             tbody.appendChild(tr);
         }
     }
@@ -430,12 +478,14 @@
         return "";
     }
 
-    // Hardcoded URL Mapper Core Engine
     function assignHardcodedSourceUrl(sourceName) {
         const name = sourceName.toLowerCase().trim();
 
         if (name.includes("doctor uke")) {
             return "https://www.doctoruke.com/songs.html";
+        }
+        if (name.includes("richard g")) {
+            return "https://scorpexuke.com/songs/";
         }
         if (name.includes("two chord song workbook")) {
             return "https://www.scukes.org/doc/two_chord_song_workbook_11.pdf";
@@ -466,12 +516,10 @@
         return ""; 
     }
 
-    // Dynamic Fallback Evaluator: Extracts the parent directory path if a direct URL definition is absent
     function discoverBaseFolderUrl(sourceName, records) {
         const hardcodedValue = assignHardcodedSourceUrl(sourceName);
         if (hardcodedValue !== "") return hardcodedValue;
 
-        // Searches records for the first occurrence of this source to steal its direct document address path
         const matchingRecord = records.find(row => {
             const src = extractCSVValue(row, "Source");
             return src && src.trim().toLowerCase() === sourceName.toLowerCase().trim();
@@ -481,7 +529,6 @@
             const sampleDocUrl = extractCSVValue(matchingRecord, "Link");
             if (sampleDocUrl && (sampleDocUrl.startsWith("http://") || sampleDocUrl.startsWith("https://"))) {
                 try {
-                    // Strips off the specific PDF name string to isolate the folder web index
                     const lastSlashPointer = sampleDocUrl.lastIndexOf('/');
                     if (lastSlashPointer > 8) {
                         return sampleDocUrl.substring(0, lastSlashPointer + 1);
@@ -495,7 +542,6 @@
         return "#";
     }
 
-    // Parses and compiles sources into the menu list tracker
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
         records.forEach(row => {
@@ -520,7 +566,7 @@
 
             const anchor = document.createElement("a");
             anchor.href = calculatedTargetUrl;
-            anchor.target = "_blank";
+            anchor.target = "_blank"; 
             anchor.className = "source-anchor-link";
             anchor.textContent = sourceName;
             sourcesScrollTray.appendChild(anchor);
@@ -585,18 +631,18 @@
             const fileLink = extractCSVValue(song, "Link"); 
 
             tr.innerHTML = `
-                <td class="song-bold-title">${title || '--'}</td>
-                <td>${composers || '--'}</td>
-                <td>${key || '--'}</td>
-                <td>${aiKey || '--'}</td>
-                <td>${source || '--'}</td>
-                <td>${fileLink ? `<a href="${fileLink}" target="_blank" class="pdf-action-link">Open Link</a>` : '--'}</td>
+                <td class="song-bold-title left-data">${title || '--'}</td>
+                <td class="left-data">${composers || '--'}</td>
+                <td class="center-data">${key || '--'}</td>
+                <td class="center-data">${aiKey || '--'}</td>
+                <td class="left-data">${source || '--'}</td>
+                <td class="center-data">${fileLink ? `<a href="${fileLink}" target="_blank" class="pdf-action-link">Open Link</a>` : '--'}</td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    Papa.parse("v13_uke_songs.csv?v=50", {
+    Papa.parse("v13_uke_songs.csv?v=52", {
         download: true,
         header: true,
         skipEmptyLines: true,

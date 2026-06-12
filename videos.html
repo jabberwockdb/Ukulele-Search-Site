@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Ukulele Friends - Open Mic Videos</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -10,40 +12,84 @@
         if (localStorage.getItem("uke_authenticated") !== "true") {
             window.location.href = "index.html";
         }
+
+        // Mobile Address Bar Minimization Kick Routine
+        window.addEventListener("load", function() {
+            setTimeout(function() {
+                window.scrollTo(0, 1);
+            }, 100);
+        });
     </script>
     <style>
+        /* Synced global canvas layout constraints across index types */
         html, body {
             margin: 0;
             padding: 0;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-sizing: border-box;
         }
 
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url('login_search_background.png') no-repeat center top fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url('login_search_background.png') no-repeat center -40px fixed;
             background-size: cover;
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
+        /* Responsive Landscape Advisory Banner for Mobile Devices */
+        .orientation-alert-banner {
+            display: none;
+            width: 100%;
+            background-color: #ffcc00;
+            color: #000;
+            text-align: center;
+            padding: 8px 10px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        @media screen and (max-device-width: 768px) and (orientation: portrait) {
+            .orientation-alert-banner {
+                display: block;
+            }
+        }
+
+        /* 1. PERMANENTLY STATIONARY TOP ZONE */
+        .stationary-top-zone {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+            background: transparent;
+            z-index: 100;
+        }
+
+        /* Harmonized Menu Strip Position Settings */
         .top-navigation-bar {
             width: 100%;
-            height: 50px;
+            height: 45px;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 20px;
-            z-index: 110;
             padding-top: 5px;
+            background: rgba(0, 0, 0, 0.15);
         }
 
         .menu-item-text {
             text-decoration: none;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
-            padding: 8px 25px;
-            border-radius: 8px;
+            padding: 6px 22px;
+            border-radius: 6px;
             color: #ffd699; 
             background: rgba(90, 45, 20, 0.85); 
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -58,80 +104,131 @@
 
         .menu-item-text.active {
             color: #ffffff; 
-            background: rgba(230, 92, 0, 0.9); 
+            background: rgba(230, 92, 0, 0.95); 
             border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
+        /* Harmonized Upper Structural Header Control Component */
         .header-control-zone {
-            width: 100%;
-            height: 110px; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 96%;
+            max-width: 1200px;
+            height: 160px; 
+            margin-top: 15px;
+            margin-bottom: 5px;
             position: relative;
-            z-index: 100;
-        }
-
-        .center-sign-asset {
-            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .docked-control-bar {
-            width: 100%;
-            padding: 0 20px;
-            box-sizing: border-box;
-            display: flex;
-            justify-content: flex-start;
-            align-items: flex-end; 
-            z-index: 105;
-            height: 65px; /* Expanded slightly to generate a clean visual line separation */
-        }
-
-        .left-sidebar-controls {
+        /* Performers Sidebar Container - Tailored exactly to match the source table template layout */
+        .left-performers-sidebar {
+            position: absolute;
+            left: 0;
+            top: 10px; 
+            height: 135px; 
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            background: rgba(90, 45, 20, 0.9);
-            padding: 8px 14px 6px 14px;
-            border-radius: 6px 6px 0 0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-bottom: none;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+            background: rgba(40, 20, 5, 0.82); 
+            padding: 10px 14px;
+            border-radius: 8px;
+            width: 260px;
+            box-sizing: border-box;
+            border: 1px solid rgba(255, 214, 153, 0.3);
+            z-index: 200; 
         }
 
-        .control-label {
-            font-size: 11px;
+        .sidebar-header-wrapper {
+            margin-bottom: 8px;
+            flex-shrink: 0; 
+            border-bottom: 1px solid rgba(255, 214, 153, 0.4);
+            padding-bottom: 4px;
+        }
+
+        .sidebar-label {
+            font-size: 13px;
             font-weight: bold;
             color: #ffd699;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.9);
+            text-align: left;
+            display: inline-block;
         }
 
-        .performer-dropdown {
-            width: 210px;
-            padding: 5px;
-            font-size: 14px;
+        /* Performers Inner Scrolling List Container Track */
+        .performers-scroll-tray {
+            flex-grow: 1; 
+            overflow-y: auto;
+            display: block; 
+            padding-right: 4px;
+        }
+
+        .performers-scroll-tray::-webkit-scrollbar {
+            width: 6px;
+        }
+        .performers-scroll-tray::-webkit-scrollbar-thumb {
+            background: rgba(230, 92, 0, 0.9);
+            border-radius: 3px;
+        }
+
+        /* Custom Interactive Text Elements representing performers list options */
+        .performer-anchor-row {
+            color: #ffffff !important; 
+            text-decoration: none !important;
+            font-size: 13px;
             font-weight: 600;
-            border: 2px solid #e65c00;
-            border-radius: 4px;
-            background-color: #fff;
-            color: #222;
+            line-height: 18px; 
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block; 
+            text-align: left;
+            text-shadow: 1px 1px 2px rgba(0,0,0,1);
+            transition: all 0.12s ease-in-out;
+            width: 100%;
             cursor: pointer;
         }
 
-        /* FIXED: Height allocation rules updated to completely prevent video frame overlap */
+        .performer-anchor-row:hover {
+            color: #ffd699 !important;
+            transform: translateX(3px);
+        }
+
+        /* Highlights active performer selection */
+        .performer-anchor-row.selected-performer {
+            color: #ffaa66 !important;
+            font-weight: 700;
+            text-decoration: underline !important;
+        }
+
+        /* Central Wooden Branding Sign Graphic Frame */
+        .center-sign-asset {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            height: 135px;
+            width: 380px;
+            z-index: 50; 
+        }
+
+        /* 2. MAIN LOWER THEATER WORKSPACE VIEWPORT LAYER */
         .main-theater-viewport {
+            width: 96%;
+            max-width: 1200px;
             flex: 1;
             display: flex;
-            width: 100%;
-            height: calc(100vh - 225px); /* Increased spacing offset to cleanly push the video down */
             box-sizing: border-box;
-            background: rgba(0, 0, 0, 0.4);
-            border-top: 3px solid rgba(230, 92, 0, 0.9);
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 214, 153, 0.2);
+            border-radius: 8px;
+            margin-top: 5px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .video-screen-pane {
@@ -142,7 +239,7 @@
             justify-content: center;
             background: #000;
             position: relative;
-            padding: 10px;
+            padding: 15px;
             box-sizing: border-box;
         }
 
@@ -168,10 +265,12 @@
             background: #e65c00;
             color: #fff;
             padding: 12px 15px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .sidebar-scroll-list {
@@ -187,7 +286,7 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 4px;
-            padding: 10px;
+            padding: 8px;
             color: #ccc;
             font-size: 13px;
             cursor: pointer;
@@ -229,20 +328,27 @@
 </head>
 <body>
 
-<div class="top-navigation-bar">
-    <a href="search.html" class="menu-item-text">Song Search</a>
-    <a href="videos.html" class="menu-item-text active">Open Mic Videos</a>
-</div>
+<div class="orientation-alert-banner">🔄 For the best viewing experience, please rotate your device to Landscape view.</div>
 
-<div class="header-control-zone">
-    <div class="center-sign-asset"></div>
-</div>
+<div class="stationary-top-zone">
+    <div class="top-navigation-bar">
+        <a href="search.html" class="menu-item-text">Song Search</a>
+        <a href="videos.html" class="menu-item-text active">Open Mic Videos</a>
+    </div>
 
-<div class="docked-control-bar">
-    <div class="left-sidebar-controls">
-        <span class="control-label">Select Performer</span>
-        <select id="performerSelect" class="performer-dropdown" onchange="handleDropdownChange()">
-        </select>
+    <div class="header-control-zone">
+        <div class="left-performers-sidebar">
+            <div class="sidebar-header-wrapper">
+                <span class="sidebar-label">Performers</span>
+            </div>
+            <div id="performersScrollTray" class="performers-scroll-tray">
+                <span style="color:#eee; font-size:11px; font-style:italic;">Loading records...</span>
+            </div>
+        </div>
+        
+        <div class="center-sign-asset">
+            <div style="width:380px; height:115px; background:url('ukulele_friends_sign.png') no-repeat center; background-size:contain;"></div>
+        </div>
     </div>
 </div>
 
@@ -266,10 +372,11 @@
     let playlistData = [];
     let apiReady = false;
     let csvReady = false;
+    let currentActiveIdx = 0;
 
-    const dropdown = document.getElementById("performerSelect");
     const sidebarTitle = document.getElementById("sidebarTitle");
     const trackContainer = document.getElementById("trackListContainer");
+    const performersScrollTray = document.getElementById("performersScrollTray");
 
     function extractPlaylistID(url) {
         if (!url) return "";
@@ -283,11 +390,22 @@
         initEngineBootstrap();
     }
 
-    // Runs internal logic when API systems register ready states
     function initEngineBootstrap() {
         if (apiReady && csvReady && playlistData.length > 0) {
-            loadPerformerPlaylist(playlistData[0].link, playlistData[0].performer);
+            selectPerformer(0);
         }
+    }
+
+    function selectPerformer(index) {
+        currentActiveIdx = index;
+        const targetRow = playlistData[index];
+        
+        document.querySelectorAll('.performer-anchor-row').forEach((el, idx) => {
+            if (idx === index) el.classList.add('selected-performer');
+            else el.classList.remove('selected-performer');
+        });
+
+        loadPerformerPlaylist(targetRow.link, targetRow.performer);
     }
 
     function loadPerformerPlaylist(rawUrl, name) {
@@ -359,7 +477,6 @@
 
             trackContainer.appendChild(row);
 
-            // Fetch video metrics asynchronously
             fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoID}`)
                 .then(res => res.json())
                 .then(data => {
@@ -371,22 +488,13 @@
         });
     }
 
-    function handleDropdownChange() {
-        const selectedIndex = dropdown.value;
-        if (selectedIndex !== "") {
-            const row = playlistData[selectedIndex];
-            loadPerformerPlaylist(row.link, row.performer);
-        }
-    }
-
-    // Parse data file using cache-busting logic automatically
-    Papa.parse("playlists.csv?v=27", {
+    Papa.parse("playlists.csv?v=29", {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
             const rawRows = results.data;
-            dropdown.innerHTML = "";
+            performersScrollTray.innerHTML = "";
 
             function findValue(rowObj, searchKey) {
                 const target = searchKey.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -406,14 +514,16 @@
             }).filter(item => item.performer && item.link);
 
             if (playlistData.length === 0) {
+                performersScrollTray.innerHTML = "<span style='color:#eee; font-size:12px;'>No records found.</span>";
                 return;
             }
 
             playlistData.forEach((item, index) => {
-                const opt = document.createElement("option");
-                opt.value = index;
-                opt.textContent = item.performer;
-                dropdown.appendChild(opt);
+                const rowItem = document.createElement("div");
+                rowItem.className = "performer-anchor-row";
+                rowItem.textContent = item.performer;
+                rowItem.onclick = function() { selectPerformer(index); };
+                performersScrollTray.appendChild(rowItem);
             });
 
             csvReady = true;
