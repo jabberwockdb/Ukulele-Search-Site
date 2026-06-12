@@ -11,16 +11,15 @@
         }
     </script>
     <style>
-        /* Lock the main page viewport to prevent overall scrolling */
+        /* Allow natural page level scrolling */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-y: auto;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Fixed background image framework */
         body {
             background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('login_search_background.png') no-repeat center top fixed;
             background-size: cover;
@@ -29,16 +28,15 @@
             align-items: center;
         }
 
-        /* Fixed Top Header Zone containing the sign and navigation buttons */
+        /* Top Header Zone housing the menu buttons over the background image */
         .fixed-header-zone {
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 42vh; /* Matches your layout height for the sign alignment */
-            padding-bottom: 20px;
+            padding-top: 42vh; 
+            padding-bottom: 25px;
             flex-shrink: 0;
-            z-index: 10;
         }
 
         .main-menu-laptop {
@@ -73,7 +71,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
-        /* White Search Container Window Frame - restricted from pushing past header */
+        /* White Search Container - scrolls naturally down the page */
         .search-container {
             width: 95%;
             max-width: 1200px;
@@ -82,14 +80,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             box-sizing: border-box;
-            margin-bottom: 20px;
-            
-            /* Structural changes to allow isolated internal frame scrolling */
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* Stops content from expanding the main box upwards */
-            max-height: calc(58vh - 40px); /* Keeps container sized nicely below header */
+            margin-bottom: 50px;
         }
 
         .search-header-row {
@@ -97,7 +88,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
-            flex-shrink: 0;
         }
 
         .search-instructions {
@@ -120,7 +110,6 @@
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
-            flex-shrink: 0;
         }
 
         .search-box {
@@ -150,7 +139,6 @@
 
         #alertContainer {
             margin-bottom: 15px;
-            flex-shrink: 0;
             display: none;
         }
 
@@ -165,14 +153,13 @@
             text-align: left;
         }
 
-        /* Frame Viewport: Locks at exactly 10 visible data rows, scrolling internally */
+        /* Fixed window height optimized to display exactly 10 visible data rows comfortably */
         .table-scroll-container {
-            max-height: 480px; 
+            height: 470px;
             overflow-y: auto;
             border: 1px solid #ddd;
             background: white;
             border-radius: 4px;
-            flex-grow: 1;
         }
 
         table {
@@ -196,11 +183,11 @@
         }
 
         td {
-            padding: 12px;
+            padding: 11px 12px;
             border-bottom: 1px solid #eee;
             color: #333;
             font-size: 14px;
-            height: 22px;
+            height: 20px;
             vertical-align: middle;
         }
 
@@ -215,7 +202,6 @@
             font-weight: 500;
             text-align: left;
             line-height: 1.5;
-            flex-shrink: 0;
         }
     </style>
 </head>
@@ -231,7 +217,7 @@
 <div class="search-container">
     <div class="search-header-row">
         <div class="search-instructions">Please enter search terms to search among any fields below:</div>
-        <div class="version-tag">Version 17</div>
+        <div class="version-tag">Version 18</div>
     </div>
     
     <div class="search-row">
