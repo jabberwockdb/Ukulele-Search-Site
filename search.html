@@ -11,374 +11,484 @@
         }
     </script>
     <style>
-        /* Block global browser window scrolling so we can manage the sections manually */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Fixed full-screen tropical background canvas */
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('login_search_background.png') no-repeat center top fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url('login_search_background.png') no-repeat center top fixed;
             background-size: cover;
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
-        /* FRAME 1: The completely static top header. It NEVER scrolls or moves. */
-        .fixed-header-zone {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* FRAME 1: Fixed Navigation Bar at the absolute top of the screen */
+        .top-navigation-bar {
             width: 100%;
-            height: 52vh; /* Holds space precisely for your background sign image */
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding-bottom: 20px;
-            box-sizing: border-box;
-            z-index: 100; /* Keeps the buttons and sign on the absolute top layer */
-            pointer-events: none; /* Allows mouse interactions to pass through to underlying layers if needed */
-        }
-
-        .main-menu-laptop {
+            height: 50px;
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 20px;
-            width: 100%;
-            pointer-events: auto; /* Restores button clicks specifically for the menu items */
+            z-index: 110;
+            padding-top: 5px;
         }
 
         .menu-item-text {
             text-decoration: none;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
-            padding: 12px 35px;
+            padding: 8px 25px;
             border-radius: 8px;
             color: #ffd699; 
-            background: rgba(90, 45, 20, 0.7); /* Slightly darkened for rich text contrast */
+            background: rgba(90, 45, 20, 0.85); 
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s ease-in-out;
             white-space: nowrap;
         }
 
         .menu-item-text:hover {
-            background: rgba(140, 60, 20, 0.9);
+            background: rgba(140, 60, 20, 0.95);
             color: #ffffff;
         }
 
         .menu-item-text.active {
             color: #ffffff; 
-            background: rgba(230, 92, 0, 0.85); 
+            background: rgba(230, 92, 0, 0.9); 
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* FRAME 2: The scrollable area below the header zone */
-        .scrollable-content-tray {
-            position: absolute;
-            top: 52vh; /* Starts exactly where the fixed header zone finishes */
-            left: 0;
+        /* FRAME 2: Control Header Layer (Sources Sidebar Left, Sign Center) */
+        .header-control-zone {
             width: 100%;
-            bottom: 0;
-            overflow-y: auto; /* Activates clean, natural scrolling for the search application box */
-            padding: 10px 0 40px 0;
+            max-width: 1200px;
+            height: 140px; 
             display: flex;
-            flex-direction: column;
             align-items: center;
-            z-index: 1;
+            justify-content: center;
+            position: relative;
+            z-index: 100;
+            margin-top: 10px;
         }
 
-        /* The standalone white utility container card */
-        .search-container {
-            width: 95%;
-            max-width: 1200px;
-            background: rgba(255, 255, 255, 0.96);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        /* Alphabetical Sources Sidebar Frame pinned to the left of the wooden sign */
+        .left-sources-sidebar {
+            position: absolute;
+            left: 20px;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            background: rgba(90, 45, 20, 0.92);
+            padding: 10px 12px;
+            border-radius: 6px 6px 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: none;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+            width: 240px;
             box-sizing: border-box;
         }
 
-        .search-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #ffd699;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 3px;
         }
 
-        .search-instructions {
-            font-size: 16px;
-            color: #222;
-            font-weight: bold;
+        .sources-scroll-tray {
+            max-height: 85px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding-right: 2px;
+        }
+
+        /* Custom styling scrollbar layout metrics for tiny tray viewports */
+        .sources-scroll-tray::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sources-scroll-tray::-webkit-scrollbar-thumb {
+            background: rgba(230, 92, 0, 0.7);
+            border-radius: 2px;
+        }
+
+        .source-anchor-link {
+            color: #fff;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: color 0.15s ease-in-out;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
             text-align: left;
         }
 
-        .version-tag {
-            font-size: 14px;
-            color: #666;
-            font-weight: 600;
-            background: #e0e0e0;
-            padding: 4px 10px;
-            border-radius: 4px;
+        .source-anchor-link:hover {
+            color: #ffd699;
+            text-decoration: underline;
         }
 
-        .search-row {
+        .center-sign-asset {
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* FRAME 3: Search Display Container Box Container */
+        .search-container-box {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 25px;
+            width: 90%;
+            max-width: 1160px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .search-instruction-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .search-interactive-row {
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
         }
 
-        .search-box {
+        .search-input-field {
             flex: 1;
-            padding: 14px;
+            padding: 10px 15px;
             font-size: 16px;
             border: 2px solid #cc5200;
             border-radius: 6px;
-            box-sizing: border-box;
+            outline: none;
         }
 
-        .search-submit-btn {
-            padding: 0 35px;
-            background: #e65c00;
-            border: none;
+        .search-execution-button {
+            background-color: #e65c00;
             color: white;
+            border: none;
+            padding: 10px 35px;
             font-size: 16px;
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s ease;
         }
 
-        .search-submit-btn:hover {
-            background: #cc5200;
+        .search-execution-button:hover {
+            background-color: #cc5200;
         }
 
-        #alertContainer {
+        .matches-alert-banner {
+            background-color: #fff9e6;
+            border: 1px solid #ffe0b3;
+            color: #b36b00;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
             margin-bottom: 15px;
             display: none;
-        }
-
-        .limit-alert {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-            padding: 12px 20px;
-            border-radius: 6px;
             font-weight: 600;
-            font-size: 14px;
-            text-align: left;
         }
 
-        /* Data Grid view window configured to display 10 rows before scrolling internally */
-        .table-scroll-container {
-            height: 465px; 
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
-        }
-
-        table {
+        /* Results Matrix Grid Elements Table */
+        .results-data-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            margin-top: 10px;
         }
 
-        thead th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            background: #e65c00;
+        .results-data-table th {
+            background-color: #e65c00;
             color: white;
             padding: 12px;
-            font-weight: 600;
-            text-align: left;
-            font-size: 15px;
-            vertical-align: middle;
-            border-bottom: 2px solid #cc5200;
-        }
-
-        td {
-            padding: 11px 12px;
-            border-bottom: 1px solid #eee;
-            color: #333;
             font-size: 14px;
-            height: 20px;
-            vertical-align: middle;
-        }
-
-        tr.placeholder-row td {
-            color: #ddd;
-        }
-
-        .database-footnote {
-            margin-top: 15px;
-            font-size: 13px;
-            color: #333;
-            font-weight: 500;
             text-align: left;
+            font-weight: 600;
+        }
+
+        .results-data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .results-data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .song-bold-title {
+            font-weight: 700;
+            color: #111;
+        }
+
+        .pdf-action-link {
+            color: #e65c00;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .pdf-action-link:hover {
+            text-decoration: underline;
+        }
+
+        .footnote-annotation {
+            font-size: 12px;
+            color: #555;
             line-height: 1.5;
+            margin-top: 20px;
+            display: block;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
         }
     </style>
 </head>
 <body>
 
-<div class="fixed-header-zone">
-    <nav class="main-menu-laptop">
-        <a href="search.html" class="menu-item-text active">Song Search</a>
-        <a href="videos.html" class="menu-item-text">Open Mic Videos</a>
-    </nav>
+<div class="top-navigation-bar">
+    <a href="search.html" class="menu-item-text active">Song Search</a>
+    <a href="videos.html" class="menu-item-text">Open Mic Videos</a>
 </div>
 
-<div class="scrollable-content-tray">
-    <div class="search-container">
-        <div class="search-header-row">
-            <div class="search-instructions">Please enter search terms to search among any fields below:</div>
-            <div class="version-tag">Version 19</div>
-        </div>
-        
-        <div class="search-row">
-            <input type="text" id="searchInput" class="search-box" placeholder="Type search terms here..." onkeypress="handleKeyPress(event)">
-            <button class="search-submit-btn" onclick="processMultiTermSearch()">Search</button>
-        </div>
-
-        <div id="alertContainer"></div>
-
-        <div class="table-scroll-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 25%;">Title</th>
-                        <th style="width: 25%;">Composers</th>
-                        <th style="width: 10%;">Key*</th>
-                        <th style="width: 12%;">AI Key*</th>
-                        <th style="width: 18%;">Origin</th>
-                        <th style="width: 10%;">File Link</th>
-                    </tr>
-                </thead>
-                <tbody id="resultsTableBody">
-                    </tbody>
-            </table>
-        </div>
-
-        <div class="database-footnote">
-            * =  The Key is derived from the Title or the pdf name.  The AI key uses a program to try to read the last chord in the pdf.  The program can be wrong if it doesn't find the last chord.  Or if the song doesn't end on it's key chord.
+<div class="header-control-zone">
+    <div class="left-sources-sidebar">
+        <div class="sidebar-label">Sources</div>
+        <div id="sourcesScrollTray" class="sources-scroll-tray">
+            <span style="color:#aaa; font-size:11px; font-style:italic;">Loading catalog indexes...</span>
         </div>
     </div>
+
+    <div class="center-sign-asset"></div>
+</div>
+
+<div class="search-container-box">
+    <span class="search-instruction-text">Please enter search terms to search among any fields below:</span>
+    
+    <div class="search-interactive-row">
+        <input type="text" id="searchInput" class="search-input-field" placeholder="Search by title, source, key..." onkeyup="handleKeyPress(event)">
+        <button class="search-execution-button" onclick="executeSearchQuery()">Search</button>
+    </div>
+
+    <div id="alertBanner" class="matches-alert-banner"></div>
+
+    <table class="results-data-table" id="resultsTable" style="display: none;">
+        <thead>
+            <tr>
+                <th style="width: 35%;">Title</th>
+                <th style="width: 25%;">Composers</th>
+                <th style="width: 8%;">Key*</th>
+                <th style="width: 8%;">AI Key*</th>
+                <th style="width: 14%;">Source</th>
+                <th style="width: 10%;">File Link</th>
+            </tr>
+        </thead>
+        <tbody id="resultsBody">
+            </tbody>
+    </table>
+
+    <span class="footnote-annotation">
+        * = The Key is derived from the Title or the pdf name. The AI key uses a program to try to read the last chord in the pdf. The program can be wrong if it doesn't find the last chord. Or if the song doesn't end on its key chord.
+    </span>
 </div>
 
 <script>
-    let songDatabase = [];
+    let databaseRecords = [];
+    const searchInput = document.getElementById("searchInput");
+    const alertBanner = document.getElementById("alertBanner");
+    const resultsTable = document.getElementById("resultsTable");
+    const resultsBody = document.getElementById("resultsBody");
+    const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    function initEmptyGrid() {
-        document.getElementById("alertContainer").style.display = "none";
-        const tbody = document.getElementById("resultsTableBody");
-        tbody.innerHTML = "";
-        for (let i = 0; i < 10; i++) {
-            const tr = document.createElement("tr");
-            tr.className = "placeholder-row";
-            tr.innerHTML = `<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`;
-            tbody.appendChild(tr);
-        }
-    }
-    window.onload = initEmptyGrid;
-
-    Papa.parse("v13_uke_songs.csv", {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            songDatabase = results.data;
-            console.log("Database online. Connected records: " + songDatabase.length);
-        }
-    });
-
-    function handleKeyPress(event) {
-        if (event.key === "Enter") {
-            processMultiTermSearch();
-        }
-    }
-
-    function extractCSVValue(rowObj, targetedHeaderName) {
-        const cleanTarget = targetedHeaderName.toLowerCase().replace(/[^a-z0-9]/g, "");
-        for (let originalKey in rowObj) {
-            const cleanKey = originalKey.toLowerCase().replace(/[^a-z0-9]/g, "");
-            if (cleanKey === cleanTarget) {
-                return rowObj[originalKey] ? rowObj[originalKey].toString().trim() : "";
+    // Helper to sanitize key tracking fields cleanly
+    function locateCleanValue(rowObj, searchKey) {
+        const target = searchKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+        for (let k in rowObj) {
+            if (k.toLowerCase().replace(/[^a-z0-9]/g, "") === target) {
+                return rowObj[k] ? rowObj[k].toString().trim() : "";
             }
         }
         return "";
     }
 
-    function processMultiTermSearch() {
-        const query = document.getElementById("searchInput").value.trim().toLowerCase();
-        const tbody = document.getElementById("resultsTableBody");
-        const alertContainer = document.getElementById("alertContainer");
+    // Handles smart parent domain string processing based on domain type configurations
+    function constructCleanSourceUrl(rawPdfUrl, sourceName) {
+        if (!rawPdfUrl) return "#";
+        let cleanUrl = rawPdfUrl.trim();
         
-        tbody.innerHTML = "";
-        alertContainer.style.display = "none";
-        alertContainer.innerHTML = "";
-
-        if (query === "") {
-            initEmptyGrid();
-            return;
+        // Safety step: verify prefix protocols are explicitly specified
+        if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+            cleanUrl = "https://" + cleanUrl;
         }
 
-        const searchTerms = query.split(/\s+/);
+        try {
+            const urlObj = new URL(cleanUrl);
+            const baseOrigin = urlObj.origin; // Extracts domain (e.g., https://example.com)
+            const normalizedSource = sourceName.toLowerCase();
 
-        const matchedSongs = songDatabase.filter(song => {
-            const title = extractCSVValue(song, "title").toLowerCase();
-            const composers = extractCSVValue(song, "composers").toLowerCase();
-            const key = extractCSVValue(song, "key").toLowerCase();
-            const aiKey = extractCSVValue(song, "aiguessedkey").toLowerCase();
-            const origin = extractCSVValue(song, "origin").toLowerCase();
+            // Override Exception Row #1: Sun City Uke validation rules rules
+            if (normalizedSource.includes("sun city uke")) {
+                // Preserves the primary nesting block directory paths intact
+                if (urlObj.pathname.includes("/ukulele/")) {
+                    return `${baseOrigin}/ukulele/`;
+                }
+                return cleanUrl.substring(0, cleanUrl.lastIndexOf('/')) + '/';
+            }
 
-            if (!title && !composers && !key && !aiKey && !origin) return false;
+            // Override Exception Row #2: Richard G's catalog system rules
+            if (normalizedSource.includes("richard g") || urlObj.hostname.includes("scorpexuke")) {
+                return `${baseOrigin}/songs/`;
+            }
 
-            const compositeTargetString = `${title} ${composers} ${key} ${aiKey} ${origin}`;
+            // General Standard Base Domain Fallback Resolution Rule
+            return baseOrigin + "/";
+        } catch (e) {
+            // Error handling protection mechanism tracking
+            return cleanUrl;
+        }
+    }
 
-            return searchTerms.every(term => compositeTargetString.includes(term));
+    // Generates the Alphabetical Link List inside our new Sources panel component frame
+    function compileSourcesSidebar(records) {
+        const sourceMap = new Map();
+
+        // Map every row entry to group the clean file links with their source records fields
+        records.forEach(row => {
+            if (row.source && row.fileLink) {
+                const key = row.source.trim();
+                if (!sourceMap.has(key) && row.fileLink.startsWith('http')) {
+                    sourceMap.set(key, row.fileLink);
+                }
+            }
         });
 
-        if (matchedSongs.length === 0) {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `<td colspan="6" style="text-align:center; color:#888; font-style:italic; padding:40px;">No matching records found.</td>`;
-            tbody.appendChild(tr);
+        // Pull unique source strings, sort alphabetically
+        const sortedSources = Array.from(sourceMap.keys()).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
+
+        if (sortedSources.length === 0) {
+            sourcesScrollTray.innerHTML = "<span style='color:#aaa; font-size:11px;'>No sources matched.</span>";
             return;
         }
 
-        let displayList = matchedSongs;
-        if (matchedSongs.length > 50) {
-            alertContainer.innerHTML = `<div class="limit-alert">⚠️ Showing first 50 results of ${matchedSongs.length} total matches found. Please add more specific keywords to refine your search.</div>`;
-            alertContainer.style.display = "block";
-            displayList = matchedSongs.slice(0, 50);
-        }
+        sourcesScrollTray.innerHTML = "";
+        sortedSources.forEach(sourceName => {
+            const sampleUrl = sourceMap.get(sourceName);
+            const verifiedWebUrl = constructCleanSourceUrl(sampleUrl, sourceName);
 
-        displayList.forEach(song => {
-            const tr = document.createElement("tr");
-            
-            const title = extractCSVValue(song, "title");
-            const composers = extractCSVValue(song, "composers");
-            const key = extractCSVValue(song, "key");
-            const aiKey = extractCSVValue(song, "aiguessedkey");
-            const origin = extractCSVValue(song, "origin");
-            const fileLink = extractCSVValue(song, "link"); 
+            const anchor = document.createElement("a");
+            anchor.href = verifiedWebUrl;
+            anchor.target = "_blank";
+            anchor.className = "source-anchor-link";
+            anchor.title = `Visit external index for ${sourceName}`;
+            anchor.textContent = sourceName;
 
-            tr.innerHTML = `
-                <td><strong>${title}</strong></td>
-                <td>${composers || '--'}</td>
-                <td>${key || '--'}</td>
-                <td>${aiKey || '--'}</td>
-                <td>${origin || '--'}</td>
-                <td>${fileLink ? `<a href="${fileLink}" target="_blank" style="color:#e65c00; font-weight:bold; text-decoration:none;">Open Link</a>` : '--'}</td>
-            `;
-            tbody.appendChild(tr);
+            sourcesScrollTray.appendChild(anchor);
         });
     }
+
+    function handleKeyPress(event) {
+        if (event.key === "Enter") {
+            executeSearchQuery();
+        }
+    }
+
+    function executeSearchQuery() {
+        const queryTerms = searchInput.value.toLowerCase().trim().split(/\s+/).filter(t => t.length > 0);
+        
+        if (queryTerms.length === 0) {
+            alertBanner.style.display = "none";
+            resultsTable.style.display = "none";
+            resultsBody.innerHTML = "";
+            return;
+        }
+
+        // Search engine optimization mapping query filters across rows dynamically
+        const matchingRows = databaseRecords.filter(row => {
+            const combinedSearchString = `${row.title} ${row.composers} ${row.key} ${row.aiKey} ${row.source}`.toLowerCase();
+            return queryTerms.every(term => combinedSearchString.includes(term));
+        });
+
+        if (matchingRows.length === 0) {
+            alertBanner.innerText = "No matching records found. Please refine your search terms.";
+            alertBanner.style.display = "block";
+            resultsTable.style.display = "none";
+            resultsBody.innerHTML = "";
+            return;
+        }
+
+        // Limit rendering display rows safely to maintain speed execution times 
+        const displayLimit = 50;
+        if (matchingRows.length > displayLimit) {
+            alertBanner.innerText = `⚠️ Showing first ${displayLimit} results of ${matchingRows.length} total matches found. Please add more specific keywords to refine your search.`;
+            alertBanner.style.display = "block";
+        } else {
+            alertBanner.style.display = "none";
+        }
+
+        resultsBody.innerHTML = "";
+        const visibleSubset = matchingRows.slice(0, displayLimit);
+
+        visibleSubset.forEach(row => {
+            const tableRow = document.createElement("tr");
+
+            // Build structural columns mapping values directly back to our data rows cleanly
+            tableRow.innerHTML = `
+                <td class="song-bold-title">${row.title || '--'}</td>
+                <td>${row.composers || '--'}</td>
+                <td>${row.key || '--'}</td>
+                <td>${row.aiKey || '--'}</td>
+                <td>${row.source || '--'}</td>
+                <td><a href="${row.fileLink}" target="_blank" class="pdf-action-link">Open Link</a></td>
+            `;
+            resultsBody.appendChild(tableRow);
+        });
+
+        resultsTable.style.display = "table";
+    }
+
+    // Connect and parse database records from playlists.csv utilizing standard cache-busting configurations
+    Papa.parse("songs.csv?v=25", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            const rawRows = results.data;
+
+            databaseRecords = rawRows.map(row => {
+                return {
+                    title: locateCleanValue(row, "title"),
+                    composers: locateCleanValue(row, "composers") || locateCleanValue(row, "composer"),
+                    key: locateCleanValue(row, "key"),
+                    aiKey: locateCleanValue(row, "aikey"),
+                    source: locateCleanValue(row, "source") || locateCleanValue(row, "origin"),
+                    fileLink: locateCleanValue(row, "filelink") || locateCleanValue(row, "link")
+                };
+            }).filter(item => item.title || item.fileLink);
+
+            // Execute dynamic sidebar generation instantly as soon as data passes validation checkpoints
+            compileSourcesSidebar(databaseRecords);
+        }
+    });
 </script>
 
 </body>

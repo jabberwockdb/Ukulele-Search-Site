@@ -85,7 +85,7 @@
             padding: 0 20px;
             box-sizing: border-box;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: flex-end; 
             z-index: 105;
             height: 55px;
@@ -121,37 +121,6 @@
             background-color: #fff;
             color: #222;
             cursor: pointer;
-        }
-
-        .now-playing-marquee {
-            flex: 1;
-            margin-left: 20px;
-            margin-right: 360px; 
-            background: rgba(230, 92, 0, 0.9);
-            color: #fff;
-            font-size: 15px;
-            font-weight: bold;
-            padding: 8px 16px;
-            border-radius: 6px 6px 0 0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-bottom: none;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: left;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.15);
-        }
-
-        .version-badge {
-            position: absolute;
-            right: 20px;
-            top: 10px;
-            font-size: 12px;
-            color: #fff;
-            font-weight: bold;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 4px 10px;
-            border-radius: 4px;
         }
 
         .main-theater-viewport {
@@ -266,7 +235,6 @@
 
 <div class="header-control-zone">
     <div class="center-sign-asset"></div>
-    <div class="version-badge">Version 24</div>
 </div>
 
 <div class="docked-control-bar">
@@ -275,7 +243,6 @@
         <select id="performerSelect" class="performer-dropdown" onchange="handleDropdownChange()">
         </select>
     </div>
-    <div id="videoMarqueeHeader" class="now-playing-marquee">Loading Performance...</div>
 </div>
 
 <div class="main-theater-viewport">
@@ -302,7 +269,6 @@
     const dropdown = document.getElementById("performerSelect");
     const sidebarTitle = document.getElementById("sidebarTitle");
     const trackContainer = document.getElementById("trackListContainer");
-    const videoMarqueeHeader = document.getElementById("videoMarqueeHeader");
 
     function extractPlaylistID(url) {
         if (!url) return "";
@@ -325,7 +291,6 @@
     function loadPerformerPlaylist(rawUrl, name) {
         const playlistID = extractPlaylistID(rawUrl);
         sidebarTitle.innerText = name + "'s Collection";
-        videoMarqueeHeader.innerText = "Loading " + name + "'s Playlist...";
         trackContainer.innerHTML = "<p style='color:#aaa; font-style:italic; padding:10px;'>Fetching live data fields...</p>";
 
         if (player) {
@@ -361,16 +326,6 @@
     function onPlayerStateChange(event) {
         if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.BUFFERING) {
             const index = event.target.getPlaylistIndex();
-            
-            try {
-                if (player && typeof player.getVideoData === 'function') {
-                    const activeVideoData = player.getVideoData();
-                    if (activeVideoData && activeVideoData.title) {
-                        videoMarqueeHeader.innerText = "Now Playing: " + activeVideoData.title;
-                    }
-                }
-            } catch (err) { console.log("Marquee lookup deferred."); }
-
             document.querySelectorAll('.playlist-track-row').forEach((row, idx) => {
                 if (idx === index) row.classList.add('active-track');
                 else row.classList.remove('active-track');
@@ -402,22 +357,14 @@
 
             trackContainer.appendChild(row);
 
-            // Dynamic background fetch workaround to grab real metadata values via open JSON endpoint
             fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoID}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.title) {
                         document.getElementById(`details-text-${index}`).innerText = data.title;
-                        
-                        // If this is the starting video, update the marquee header immediately
-                        if (index === 0) {
-                            videoMarqueeHeader.innerText = "Now Playing: " + data.title;
-                        }
                     }
                 })
-                .catch(err => {
-                    console.log("Fallback naming utilized for index: " + index);
-                });
+                .catch(err => { console.log("Fallback title applied."); });
         });
     }
 
@@ -429,7 +376,7 @@
         }
     }
 
-    Papa.parse("playlists.csv", {
+    Papa.parse("playlists.csv?v=25", {
         download: true,
         header: true,
         skipEmptyLines: true,
@@ -455,7 +402,6 @@
             }).filter(item => item.performer && item.link);
 
             if (playlistData.length === 0) {
-                sidebarTitle.innerText = "Empty Data Source File";
                 return;
             }
 
