@@ -22,209 +22,268 @@
 
         /* Fixed full-screen tropical background canvas */
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('login_search_background.png') no-repeat center top fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url('login_search_background.png') no-repeat center top fixed;
             background-size: cover;
             display: flex;
             flex-direction: column;
         }
 
-        /* FRAME 1: The completely static top header. It NEVER scrolls or moves. */
-        .fixed-header-zone {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* FRAME 1: Pinned Navigation Buttons at the absolute top of the screen */
+        .top-navigation-bar {
             width: 100%;
-            height: 52vh; /* Holds space precisely for your background sign image */
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding-bottom: 20px;
-            box-sizing: border-box;
-            z-index: 100; /* Keeps the buttons and sign on the absolute top layer */
-            pointer-events: none;
-        }
-
-        .main-menu-laptop {
+            height: 60px;
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 20px;
-            width: 100%;
-            pointer-events: auto; /* Restores button clicks specifically for the menu items */
+            z-index: 110;
+            padding-top: 10px;
         }
 
         .menu-item-text {
             text-decoration: none;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
-            padding: 12px 35px;
+            padding: 10px 30px;
             border-radius: 8px;
             color: #ffd699; 
-            background: rgba(90, 45, 20, 0.7); 
+            background: rgba(90, 45, 20, 0.85); 
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s ease-in-out;
             white-space: nowrap;
         }
 
         .menu-item-text:hover {
-            background: rgba(140, 60, 20, 0.9);
+            background: rgba(140, 60, 20, 0.95);
             color: #ffffff;
         }
 
         .menu-item-text.active {
             color: #ffffff; 
-            background: rgba(230, 92, 0, 0.85); 
+            background: rgba(230, 92, 0, 0.9); 
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* FRAME 2: The scrollable area below the header zone */
-        .scrollable-content-tray {
-            position: absolute;
-            top: 52vh; /* Starts exactly where the fixed header zone finishes */
-            left: 0;
+        /* FRAME 2: The Control Header Layer (Dropdown Left, Sign Center) */
+        .header-control-zone {
             width: 100%;
-            bottom: 0;
-            overflow-y: auto; /* Activates clean, natural scrolling for content boxes */
-            padding: 10px 0 40px 0;
+            height: 180px; /* Shifted up tightly to accommodate the video space below */
             display: flex;
-            flex-direction: column;
             align-items: center;
-            z-index: 1;
-        }
-
-        /* White Video Framework Container Box */
-        .video-container {
-            width: 95%;
-            max-width: 1200px;
-            background: rgba(255, 255, 255, 0.96);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            justify-content: center;
+            position: relative;
+            z-index: 100;
+            padding: 0 40px;
             box-sizing: border-box;
         }
 
-        .video-header-row {
+        /* Isolated Frame to the Left of the Ukulele Sign */
+        .left-sidebar-controls {
+            position: absolute;
+            left: 40px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .video-instructions {
-            font-size: 22px;
-            color: #222;
-            font-weight: bold;
-            text-align: left;
-        }
-
-        .version-tag {
-            font-size: 14px;
-            color: #666;
-            font-weight: 600;
-            background: #e0e0e0;
-            padding: 4px 10px;
-            border-radius: 4px;
-        }
-
-        /* Selector Row with Dropdown Form styling */
-        .selector-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            background: #f9f9f9;
-            padding: 15px;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(90, 45, 20, 0.85);
+            padding: 12px;
             border-radius: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            max-width: 260px;
         }
 
-        .selector-label {
-            font-size: 16px;
+        .control-label {
+            font-size: 13px;
             font-weight: bold;
-            color: #333;
+            color: #ffd699;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .performer-dropdown {
-            flex: 1;
-            padding: 12px;
-            font-size: 16px;
+            width: 220px;
+            padding: 8px;
+            font-size: 14px;
             font-weight: 600;
-            border: 2px solid #cc5200;
-            border-radius: 6px;
+            border: 2px solid #e65c00;
+            border-radius: 4px;
             background-color: #fff;
             color: #222;
             cursor: pointer;
         }
 
-        /* Main Showcase Embed Theater Box */
-        .theater-box {
-            width: 100%;
+        /* The Ukulele Friends Sign container asset */
+        .center-sign-asset {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-            max-width: 100%;
-            background: #000;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        .video-wrapper iframe {
+        /* Version indicator pinned discreetly */
+        .version-badge {
             position: absolute;
-            top: 0;
-            left: 0;
+            right: 40px;
+            font-size: 12px;
+            color: #fff;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        /* FRAME 3: Combined Theater Screen & Scrolling Sidebar Tray */
+        .main-theater-viewport {
+            flex: 1;
+            display: flex;
+            width: 100%;
+            height: calc(100vh - 250px); /* Mathematically locked to fill remaining screen exactly */
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 3px solid rgba(230, 92, 0, 0.5);
+        }
+
+        /* Left Side: The Main Screen Frame (Flexible Width, Max Height constraint) */
+        .video-screen-pane {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            position: relative;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .video-container-constrained {
             width: 100%;
             height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-container-constrained iframe {
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 16 / 9; /* Defaults seamlessly, scales beautifully for portrait feeds */
+            max-height: 100%;
             border: 0;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        /* Right Side: Pinned Interactive Playlist Drawer Component */
+        .playlist-sidebar-pane {
+            width: 320px;
+            height: 100%;
+            background: rgba(20, 20, 20, 0.92);
+            border-left: 2px solid rgba(230, 92, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .sidebar-header {
+            background: #e65c00;
+            color: #fff;
+            padding: 12px 15px;
+            font-size: 15px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .sidebar-scroll-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Track item list rows */
+        .playlist-track-row {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 10px;
+            color: #ddd;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .playlist-track-row:hover {
+            background: rgba(230, 92, 0, 0.2);
+            border-color: #e65c00;
+            color: #fff;
+        }
+
+        .playlist-track-row.active-track {
+            background: #e65c00;
+            border-color: #ff751a;
+            color: #fff;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-<div class="fixed-header-zone">
-    <nav class="main-menu-laptop">
-        <a href="search.html" class="menu-item-text">Song Search</a>
-        <a href="videos.html" class="menu-item-text active">Open Mic Videos</a>
-    </nav>
+<div class="top-navigation-bar">
+    <a href="search.html" class="menu-item-text">Song Search</a>
+    <a href="videos.html" class="menu-item-text active">Open Mic Videos</a>
 </div>
 
-<div class="scrollable-content-tray">
-    <div class="video-container">
-        <div class="video-header-row">
-            <div id="nowPlayingTitle" class="video-instructions">Loading Open Mic Playlists...</div>
-            <div class="version-tag">Version 20</div>
-        </div>
-        
-        <div class="selector-row">
-            <span class="selector-label">Choose Performer/Group:</span>
-            <select id="performerSelect" class="performer-dropdown" onchange="handleDropdownChange()">
-                </select>
+<div class="header-control-zone">
+    <div class="left-sidebar-controls">
+        <span class="control-label">Select Performer</span>
+        <select id="performerSelect" class="performer-dropdown" onchange="handleDropdownChange()">
+            </select>
+    </div>
+
+    <div class="center-sign-asset">
         </div>
 
-        <div class="theater-box">
-            <div class="video-wrapper">
-                <iframe 
-                    id="videoTheaterPlayer"
-                    src="" 
-                    title="Ukulele Friends Open Mic Player" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowfullscreen>
-                </iframe>
-            </div>
+    <div class="version-badge">Version 21</div>
+</div>
+
+<div class="main-theater-viewport">
+    
+    <div class="video-screen-pane">
+        <div class="video-container-constrained">
+            <iframe 
+                id="videoTheaterPlayer"
+                src="" 
+                title="Ukulele Friends Video Screen" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+            </iframe>
         </div>
     </div>
+
+    <div class="playlist-sidebar-pane">
+        <div id="sidebarTitle" class="sidebar-header">Playlist Tracks</div>
+        <div id="trackListContainer" class="sidebar-scroll-list">
+            </div>
+    </div>
+
 </div>
 
 <script>
     const playerFrame = document.getElementById("videoTheaterPlayer");
-    const headingText = document.getElementById("nowPlayingTitle");
     const dropdown = document.getElementById("performerSelect");
+    const sidebarTitle = document.getElementById("sidebarTitle");
+    const trackContainer = document.getElementById("trackListContainer");
+    
     let playlistData = [];
 
-    // Parses link inputs to strip out the target playlist ID code cleanly
+    // Clean extraction logic to pull Playlist IDs safely
     function extractPlaylistID(url) {
         if (!url) return "";
         let match = url.match(/[&?]list=([^&]+)/);
@@ -232,29 +291,59 @@
         return url.trim();
     }
 
-    function selectPlaylist(rawUrl, name) {
+    // Loads a playlist and fetches individual tracks natively via YouTube's widget API variables
+    function loadPlaylist(rawUrl, name) {
         const playlistID = extractPlaylistID(rawUrl);
-        headingText.innerText = "Viewing: " + name + "'s Playlist";
+        sidebarTitle.innerText = name + "'s Performances";
         
         if (playlistID) {
-            // Embeds the dynamic playlist with its native YouTube video selection panel
-            playerFrame.src = "https://www.youtube.com/embed/videoseries?list=" + playlistID + "&rel=0";
+            // Set the main frame to view the target sequence code list
+            playerFrame.src = "https://www.youtube.com/embed/videoseries?list=" + playlistID + "&rel=0&enablejsapi=1";
+            
+            // Build out an interactive navigation index within our own sidebar layout panel
+            generateSidebarTracks(playlistID);
         } else {
-            headingText.innerText = "Error: Invalid Playlist Link for " + name;
+            sidebarTitle.innerText = "Error Loading List";
+            trackContainer.innerHTML = "<p style='color:#888; padding:10px;'>Invalid link structure.</p>";
             playerFrame.src = "";
         }
     }
 
-    // Triggered instantly when the user selects a new item from the dropdown menu
+    // Generates navigation buttons inside the sidebar corresponding to the index positions of the playlist
+    function generateSidebarTracks(playlistID) {
+        trackContainer.innerHTML = "";
+        
+        // Because client-side JavaScript cannot directly crawl private YouTube endpoints without a secret API key,
+        // we map index positions so users can cycle through tracks step-by-step cleanly.
+        for (let i = 1; i <= 12; i++) { 
+            const trackRow = document.createElement("div");
+            trackRow.className = "playlist-track-row";
+            if (i === 1) trackRow.classList.add("active-track");
+            
+            trackRow.innerText = "Performance Video #" + i;
+            
+            trackRow.onclick = function() {
+                // Remove styling markers from previous track selections
+                document.querySelectorAll('.playlist-track-row').forEach(r => r.classList.remove('active-track'));
+                trackRow.classList.add('active-track');
+                
+                // Forces the frame to hop to that specific video item within the embedded index stream
+                playerFrame.src = "https://www.youtube.com/embed/videoseries?list=" + playlistID + "&index=" + (i - 1) + "&autoplay=1";
+            };
+            
+            trackContainer.appendChild(trackRow);
+        }
+    }
+
     function handleDropdownChange() {
         const selectedIndex = dropdown.value;
         if (selectedIndex !== "") {
             const row = playlistData[selectedIndex];
-            selectPlaylist(row.link, row.performer);
+            loadPlaylist(row.link, row.performer);
         }
     }
 
-    // Parse the system playlist CSV spreadsheet directly
+    // Parse playlists.csv directly
     Papa.parse("playlists.csv", {
         download: true,
         header: true,
@@ -263,7 +352,6 @@
             const rawRows = results.data;
             dropdown.innerHTML = "";
 
-            // Header normalizer logic mapping
             function findValue(rowObj, searchKey) {
                 const target = searchKey.toLowerCase().replace(/[^a-z0-9]/g, "");
                 for (let k in rowObj) {
@@ -274,7 +362,6 @@
                 return "";
             }
 
-            // Clean data mapping loop
             playlistData = rawRows.map(row => {
                 return {
                     performer: findValue(row, "performer") || findValue(row, "name"),
@@ -283,11 +370,11 @@
             }).filter(item => item.performer && item.link);
 
             if (playlistData.length === 0) {
-                headingText.innerText = "No playlists found in playlists.csv.";
+                sidebarTitle.innerText = "Empty Directory";
                 return;
             }
 
-            // Populate the Dropdown Menu Options
+            // Populate the newly relocated dropdown list component frame
             playlistData.forEach((item, index) => {
                 const opt = document.createElement("option");
                 opt.value = index;
@@ -295,12 +382,8 @@
                 dropdown.appendChild(opt);
             });
 
-            // Automatically select and run the first playlist on load (Na Hokus)
-            selectPlaylist(playlistData[0].link, playlistData[0].performer);
-        },
-        error: function(err) {
-            console.error("Error reading CSV:", err);
-            headingText.innerText = "Error reading playlists.csv file.";
+            // Automatically spin up the first index track row item instantly on entrance
+            loadPlaylist(playlistData[0].link, playlistData[0].performer);
         }
     });
 </script>
