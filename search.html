@@ -11,24 +11,40 @@
         }
     </script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('login_search_background.png') no-repeat center top fixed;
-            background-size: cover;
+        /* Lock the main page viewport to prevent overall scrolling */
+        html, body {
             margin: 0;
             padding: 0;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Fixed background image framework */
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('login_search_background.png') no-repeat center top fixed;
+            background-size: cover;
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        /* Fixed Top Header Zone containing the sign and navigation buttons */
+        .fixed-header-zone {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 42vh; /* Matches your layout height for the sign alignment */
+            padding-bottom: 20px;
+            flex-shrink: 0;
+            z-index: 10;
         }
 
         .main-menu-laptop {
             display: flex;
             justify-content: center;
             gap: 20px;
-            padding-top: 42vh; 
-            padding-bottom: 20px;
             width: 100%;
         }
 
@@ -57,6 +73,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
+        /* White Search Container Window Frame - restricted from pushing past header */
         .search-container {
             width: 95%;
             max-width: 1200px;
@@ -65,7 +82,14 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             box-sizing: border-box;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
+            
+            /* Structural changes to allow isolated internal frame scrolling */
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Stops content from expanding the main box upwards */
+            max-height: calc(58vh - 40px); /* Keeps container sized nicely below header */
         }
 
         .search-header-row {
@@ -73,6 +97,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
+            flex-shrink: 0;
         }
 
         .search-instructions {
@@ -95,6 +120,7 @@
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
+            flex-shrink: 0;
         }
 
         .search-box {
@@ -124,6 +150,7 @@
 
         #alertContainer {
             margin-bottom: 15px;
+            flex-shrink: 0;
             display: none;
         }
 
@@ -138,12 +165,14 @@
             text-align: left;
         }
 
+        /* Frame Viewport: Locks at exactly 10 visible data rows, scrolling internally */
         .table-scroll-container {
             max-height: 480px; 
             overflow-y: auto;
             border: 1px solid #ddd;
             background: white;
             border-radius: 4px;
+            flex-grow: 1;
         }
 
         table {
@@ -186,20 +215,23 @@
             font-weight: 500;
             text-align: left;
             line-height: 1.5;
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body>
 
-<nav class="main-menu-laptop">
-    <a href="search.html" class="menu-item-text active">Song Search</a>
-    <a href="videos.html" class="menu-item-text">Open Mic Videos</a>
-</nav>
+<div class="fixed-header-zone">
+    <nav class="main-menu-laptop">
+        <a href="search.html" class="menu-item-text active">Song Search</a>
+        <a href="videos.html" class="menu-item-text">Open Mic Videos</a>
+    </nav>
+</div>
 
 <div class="search-container">
     <div class="search-header-row">
         <div class="search-instructions">Please enter search terms to search among any fields below:</div>
-        <div class="version-tag">Version 16</div>
+        <div class="version-tag">Version 17</div>
     </div>
     
     <div class="search-row">
