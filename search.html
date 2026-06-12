@@ -11,15 +11,12 @@
         }
     </script>
     <style>
-        /* Lock main page canvas stationary - no global scrolling allowed */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-y: auto; /* Standard page behavior restored */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            box-sizing: border-box;
         }
 
         body {
@@ -30,7 +27,7 @@
             align-items: center;
         }
 
-        /* Top Navigation Bar Component Layout Zone */
+        /* Top Navigation Row */
         .top-navigation-bar {
             width: 100%;
             height: 50px;
@@ -40,7 +37,6 @@
             gap: 20px;
             z-index: 110;
             padding-top: 5px;
-            flex-shrink: 0;
         }
 
         .menu-item-text {
@@ -68,7 +64,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* Upper Structural Layer Zone for Sidebar Alignments */
+        /* Sign & Upper Layout Zone */
         .header-control-zone {
             width: 100%;
             max-width: 1200px;
@@ -76,10 +72,9 @@
             position: relative;
             z-index: 100;
             margin-top: 10px;
-            flex-shrink: 0;
         }
 
-        /* Locked Stationary Transparent Left Sources Sidebar Panel */
+        /* Transparent Left Sidebar Style */
         .left-sources-sidebar {
             position: absolute;
             left: 20px;
@@ -166,7 +161,7 @@
             pointer-events: none;
         }
 
-        /* Core Application Search Display Container Layout Box Frame */
+        /* Search Box Main Outer Container */
         .search-container-box {
             background-color: #fff;
             border-radius: 8px;
@@ -176,11 +171,8 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             box-sizing: border-box;
             margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            /* Calculate container size to comfortably prevent background clipping drops */
-            max-height: calc(100vh - 270px); 
+            margin-bottom: 40px;
+            text-align: left;
         }
 
         .search-instruction-text {
@@ -189,14 +181,12 @@
             color: #222;
             margin-bottom: 15px;
             display: block;
-            flex-shrink: 0;
         }
 
         .search-interactive-row {
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
-            flex-shrink: 0;
         }
 
         .search-input-field {
@@ -234,10 +224,9 @@
             margin-bottom: 15px;
             display: none;
             font-weight: 600;
-            flex-shrink: 0;
         }
 
-        /* Strict Independent Inner 10-Row Scrolling Matrix Frame Container */
+        /* Strict Grid Viewport - Locked to 470px Height */
         .table-scroll-container {
             height: 470px;
             overflow-y: auto;
@@ -245,15 +234,6 @@
             background: white;
             border-radius: 4px;
             margin-top: 10px;
-            flex-grow: 1;
-        }
-
-        .table-scroll-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        .table-scroll-container::-webkit-scrollbar-thumb {
-            background: rgba(230, 92, 0, 0.5);
-            border-radius: 3px;
         }
 
         .results-data-table {
@@ -310,11 +290,10 @@
             font-size: 12px;
             color: #555;
             line-height: 1.5;
-            margin-top: 15px;
+            margin-top: 20px;
             display: block;
             border-top: 1px solid #eee;
-            padding-top: 12px;
-            flex-shrink: 0;
+            padding-top: 15px;
         }
     </style>
 </head>
@@ -329,7 +308,7 @@
     <div class="left-sources-sidebar">
         <div class="sidebar-header-wrapper">
             <div class="sidebar-label">Sources</div>
-            <span class="sidebar-version-tag">v41</span>
+            <span class="sidebar-version-tag">v42</span>
         </div>
         <div id="sourcesScrollTray" class="sources-scroll-tray">
             <span style="color:#eee; font-size:12px; font-style:italic;">Processing song library...</span>
@@ -377,7 +356,7 @@
     const tbody = document.getElementById("resultsTableBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Clear and build initial 10-row empty placeholder layout
+    // Generates 10 default placeholder rows on initial load
     function initEmptyGrid() {
         alertBanner.style.display = "none";
         tbody.innerHTML = "";
@@ -390,7 +369,7 @@
     }
     window.onload = initEmptyGrid;
 
-    // Direct case-insensitive space-stripped CSV header mapper configuration 
+    // Case-insensitive space-stripped CSV header normalizer mapping helper
     function extractCSVValue(rowObj, targetedHeaderName) {
         if (!rowObj) return "";
         const cleanTarget = targetedHeaderName.toLowerCase().replace(/[^a-z0-9_]/g, "");
@@ -403,7 +382,7 @@
         return "";
     }
 
-    // Specialized Domain Processing Exception Router Module
+    // URL directory clean path exception processing router rules
     function constructCleanSourceUrl(rawPdfUrl, sourceName) {
         if (!rawPdfUrl) return "#";
         let cleanUrl = rawPdfUrl.trim();
@@ -415,22 +394,19 @@
             const baseOrigin = urlObj.origin;
             const normalizedSource = sourceName.toLowerCase().trim();
 
-            // Catch-all rule for ANY source string starting with "Sun City"
             if (normalizedSource.startsWith("sun city")) {
                 return cleanUrl.substring(0, cleanUrl.lastIndexOf('/')) + '/';
             }
-            // Richard G & Scorpexuke base path enforcement mapping rules
             if (normalizedSource.includes("richard g") || urlObj.hostname.includes("scorpexuke")) {
                 return `${baseOrigin}/songs/`;
             }
-            // Base URL Fallback Configuration Standard
             return baseOrigin + "/";
         } catch (e) {
             return cleanUrl;
         }
     }
 
-    // Extracts, alphabetizes, and renders unique items inside stationary left side panel
+    // Compiles sorted unique links inside the sidebar tray panel component
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
         records.forEach(row => {
@@ -471,7 +447,7 @@
         }
     }
 
-    // Classic 10-Row Viewport Window Mapping Search Mechanism 
+    // Engine logic matching the strict 50-row cutoff
     function processMultiTermSearch() {
         const query = searchInput.value.trim().toLowerCase();
         
@@ -535,14 +511,14 @@
         });
     }
 
-    // Direct parser engine initializer connection point
-    Papa.parse("v13_uke_songs.csv?v=41", {
+    // Fetch the data file via PapaParse
+    Papa.parse("v13_uke_songs.csv?v=42", {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
             songDatabase = results.data;
-            console.log("Database online. Connected records: " + songDatabase.length);
+            console.log("Database loaded. Total records: " + songDatabase.length);
             compileSourcesSidebar(songDatabase);
         }
     });
