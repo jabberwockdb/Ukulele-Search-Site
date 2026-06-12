@@ -15,6 +15,7 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            overflow-y: auto;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
@@ -26,7 +27,7 @@
             align-items: center;
         }
 
-        /* Top Navigation Row */
+        /* Top Navigation Row - From Version 39 Visuals */
         .top-navigation-bar {
             width: 100%;
             height: 50px;
@@ -63,7 +64,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* Sign & Upper Layout Zone */
+        /* Sign & Upper Layout Zone - From Version 39 Alignment */
         .header-control-zone {
             width: 100%;
             max-width: 1200px;
@@ -73,7 +74,7 @@
             margin-top: 10px;
         }
 
-        /* Left Sidebar Position */
+        /* Transparent Left Sidebar Style - Matches Version 39 Layout */
         .left-sources-sidebar {
             position: absolute;
             left: 20px;
@@ -160,7 +161,7 @@
             pointer-events: none;
         }
 
-        /* Search Box Layout Container */
+        /* Search Box Main Outer Box Frame */
         .search-container-box {
             background-color: #fff;
             border-radius: 8px;
@@ -225,26 +226,41 @@
             font-weight: 600;
         }
 
-        .results-data-table {
-            width: 100%;
-            border-collapse: collapse;
+        /* Strict Old-School Scrolling Window Viewport - Locked to 10 Rows */
+        .table-scroll-container {
+            height: 470px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
             margin-top: 10px;
         }
 
+        .results-data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
         .results-data-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
             background-color: #e65c00;
             color: white;
             padding: 12px;
             font-size: 14px;
             text-align: left;
             font-weight: 600;
+            border-bottom: 2px solid #cc5200;
         }
 
         .results-data-table td {
-            padding: 12px;
+            padding: 11px 12px;
             border-bottom: 1px solid #eee;
             font-size: 14px;
             color: #333;
+            height: 20px;
+            vertical-align: middle;
         }
 
         .results-data-table tr:last-child td {
@@ -254,6 +270,10 @@
         .song-bold-title {
             font-weight: 700;
             color: #111;
+        }
+
+        tr.placeholder-row td {
+            color: #ddd;
         }
 
         .pdf-action-link {
@@ -288,7 +308,7 @@
     <div class="left-sources-sidebar">
         <div class="sidebar-header-wrapper">
             <div class="sidebar-label">Sources</div>
-            <span class="sidebar-version-tag">v38</span>
+            <span class="sidebar-version-tag">v40</span>
         </div>
         <div id="sourcesScrollTray" class="sources-scroll-tray">
             <span style="color:#eee; font-size:12px; font-style:italic;">Processing song library...</span>
@@ -302,25 +322,27 @@
     
     <div class="search-interactive-row">
         <input type="text" id="searchInput" class="search-input-field" placeholder="Search by title, source, key..." onkeyup="handleKeyPress(event)">
-        <button class="search-execution-button" onclick="executeSearchQuery()">Search</button>
+        <button class="search-execution-button" onclick="processMultiTermSearch()">Search</button>
     </div>
 
     <div id="alertBanner" class="matches-alert-banner"></div>
 
-    <table class="results-data-table" id="resultsTable" style="display: none;">
-        <thead>
-            <tr>
-                <th style="width: 35%;">Title</th>
-                <th style="width: 25%;">Composers</th>
-                <th style="width: 8%;">Key*</th>
-                <th style="width: 8%;">AI Key*</th>
-                <th style="width: 14%;">Source</th>
-                <th style="width: 10%;">File Link</th>
-            </tr>
-        </thead>
-        <tbody id="resultsBody">
-        </tbody>
-    </table>
+    <div class="table-scroll-container">
+        <table class="results-data-table" id="resultsTable">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Title</th>
+                    <th style="width: 25%;">Composers</th>
+                    <th style="width: 8%;">Key*</th>
+                    <th style="width: 8%;">AI Key*</th>
+                    <th style="width: 14%;">Source</th>
+                    <th style="width: 10%;">File Link</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+            </tbody>
+        </table>
+    </div>
 
     <span class="footnote-annotation">
         * = The Key is derived from the Title or the pdf name. The AI key uses a program to try to read the last chord in the pdf. The program can be wrong if it doesn't find the last chord. Or if the song doesn't end on its key chord.
@@ -328,13 +350,39 @@
 </div>
 
 <script>
-    let databaseRecords = [];
+    let songDatabase = [];
     const searchInput = document.getElementById("searchInput");
     const alertBanner = document.getElementById("alertBanner");
-    const resultsTable = document.getElementById("resultsTable");
-    const resultsBody = document.getElementById("resultsBody");
+    const tbody = document.getElementById("resultsTableBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
+    // Old-School Grid System Initializer
+    function initEmptyGrid() {
+        alertBanner.style.display = "none";
+        tbody.innerHTML = "";
+        for (let i = 0; i < 10; i++) {
+            const tr = document.createElement("tr");
+            tr.className = "placeholder-row";
+            tr.innerHTML = `<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`;
+            tbody.appendChild(tr);
+        }
+    }
+    window.onload = initEmptyGrid;
+
+    // Helper to accurately extract precise header fields from your schema layout
+    function extractCSVValue(rowObj, targetedHeaderName) {
+        if (!rowObj) return "";
+        const cleanTarget = targetedHeaderName.toLowerCase().replace(/[^a-z0-9_]/g, "");
+        for (let originalKey in rowObj) {
+            const cleanKey = originalKey.toLowerCase().replace(/[^a-z0-9_]/g, "");
+            if (cleanKey === cleanTarget) {
+                return rowObj[originalKey] ? rowObj[originalKey].toString().trim() : "";
+            }
+        }
+        return "";
+    }
+
+    // Dynamic extraction engine for building our left domain tray
     function constructCleanSourceUrl(rawPdfUrl, sourceName) {
         if (!rawPdfUrl) return "#";
         let cleanUrl = rawPdfUrl.trim();
@@ -362,10 +410,13 @@
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
         records.forEach(row => {
-            if (row && row.source && row.fileLink) {
-                const key = row.source.trim();
-                if (!sourceMap.has(key) && row.fileLink.startsWith('http')) {
-                    sourceMap.set(key, row.fileLink);
+            const sourceName = extractCSVValue(row, "Source");
+            const fileLink = extractCSVValue(row, "Link");
+            
+            if (sourceName && fileLink) {
+                const key = sourceName.trim();
+                if (!sourceMap.has(key) && fileLink.startsWith('http')) {
+                    sourceMap.set(key, fileLink);
                 }
             }
         });
@@ -392,80 +443,83 @@
 
     function handleKeyPress(event) {
         if (event.key === "Enter") {
-            executeSearchQuery();
+            processMultiTermSearch();
         }
     }
 
-    // ORIGINAL VERSION 19 SEARCH LOGIC
-    function executeSearchQuery() {
-        const queryTerms = searchInput.value.toLowerCase().trim().split(/\s+/).filter(t => t.length > 0);
+    // Classic Strict Window Display Engine Logic from Version 18
+    function processMultiTermSearch() {
+        const query = searchInput.value.trim().toLowerCase();
         
-        if (queryTerms.length === 0) {
-            alertBanner.style.display = "none";
-            resultsTable.style.display = "none";
-            resultsBody.innerHTML = "";
-            return;
-        }
-
-        const matchingRows = databaseRecords.filter(row => {
-            const combinedSearchString = `${row.title} ${row.composers} ${row.key} ${row.aiKey} ${row.source}`.toLowerCase();
-            return queryTerms.every(term => combinedSearchString.includes(term));
-        });
-
-        if (matchingRows.length === 0) {
-            alertBanner.innerText = "No matching records found. Please refine your search terms.";
-            alertBanner.style.display = "block";
-            resultsTable.style.display = "none";
-            resultsBody.innerHTML = "";
-            return;
-        }
-
+        tbody.innerHTML = "";
         alertBanner.style.display = "none";
-        resultsBody.innerHTML = "";
+        alertBanner.innerHTML = "";
 
-        matchingRows.forEach(row => {
-            const tableRow = document.createElement("tr");
-            tableRow.innerHTML = `
-                <td class="song-bold-title">${row.title || '--'}</td>
-                <td>${row.composers || '--'}</td>
-                <td>${row.key || '--'}</td>
-                <td>${row.aiKey || '--'}</td>
-                <td>${row.source || '--'}</td>
-                <td><a href="${row.fileLink}" target="_blank" class="pdf-action-link">Open Link</a></td>
-            `;
-            resultsBody.appendChild(tableRow);
+        if (query === "") {
+            initEmptyGrid();
+            return;
+        }
+
+        const searchTerms = query.split(/\s+/);
+
+        const matchedSongs = songDatabase.filter(song => {
+            const title = extractCSVValue(song, "Title").toLowerCase();
+            const composers = extractCSVValue(song, "Composers").toLowerCase();
+            const key = extractCSVValue(song, "Key").toLowerCase();
+            const aiKey = extractCSVValue(song, "AI_Guessed_Key").toLowerCase();
+            const source = extractCSVValue(song, "Source").toLowerCase();
+
+            if (!title && !composers && !key && !aiKey && !source) return false;
+
+            const compositeTargetString = `${title} ${composers} ${key} ${aiKey} ${source}`;
+            return searchTerms.every(term => compositeTargetString.includes(term));
         });
 
-        resultsTable.style.display = "table";
+        if (matchedSongs.length === 0) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td colspan="6" style="text-align:center; color:#888; font-style:italic; padding:40px;">No matching records found.</td>`;
+            tbody.appendChild(tr);
+            return;
+        }
+
+        let displayList = matchedSongs;
+        if (matchedSongs.length > 50) {
+            alertBanner.innerHTML = `⚠️ Showing first 50 results of ${matchedSongs.length} total matches found. Please add more specific keywords to refine your search.`;
+            alertBanner.style.display = "block";
+            displayList = matchedSongs.slice(0, 50);
+        }
+
+        displayList.forEach(song => {
+            const tr = document.createElement("tr");
+            
+            const title = extractCSVValue(song, "Title");
+            const composers = extractCSVValue(song, "Composers");
+            const key = extractCSVValue(song, "Key");
+            const aiKey = extractCSVValue(song, "AI_Guessed_Key");
+            const source = extractCSVValue(song, "Source");
+            const fileLink = extractCSVValue(song, "Link"); 
+
+            tr.innerHTML = `
+                <td class="song-bold-title">${title || '--'}</td>
+                <td>${composers || '--'}</td>
+                <td>${key || '--'}</td>
+                <td>${aiKey || '--'}</td>
+                <td>${source || '--'}</td>
+                <td>${fileLink ? `<a href="${fileLink}" target="_blank" class="pdf-action-link">Open Link</a>` : '--'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 
-    // CONNECTED DIRECTLY TO YOUR REAL FILE TARGET NAME
-    Papa.parse("v13_uke_songs.csv?v=38", {
+    // Direct Target Data Mapping Connection
+    Papa.parse("v13_uke_songs.csv?v=40", {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-            const rawRows = results.data;
-
-            if (!rawRows || rawRows.length === 0) {
-                sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:12px;'>v13_uke_songs.csv loaded empty. Check file.</span>";
-                return;
-            }
-
-            databaseRecords = rawRows.map(row => {
-                if (!row) return null;
-                return {
-                    title: row["Title"] ? row["Title"].toString().trim() : "",
-                    composers: row["Composers"] ? row["Composers"].toString().trim() : "",
-                    key: row["Key"] ? row["Key"].toString().trim() : "",
-                    aiKey: row["AI_Guessed_Key"] ? row["AI_Guessed_Key"].toString().trim() : "",
-                    source: row["Source"] ? row["Source"].toString().trim() : "", 
-                    fileLink: row["Link"] ? row["Link"].toString().trim() : ""
-                };
-            }).filter(item => item !== null && item.title && item.fileLink);
-
-            console.log("Database online. Connected records: " + databaseRecords.length);
-            compileSourcesSidebar(databaseRecords);
+            songDatabase = results.data;
+            console.log("Database online. Connected records: " + songDatabase.length);
+            compileSourcesSidebar(songDatabase);
         }
     });
 </script>
