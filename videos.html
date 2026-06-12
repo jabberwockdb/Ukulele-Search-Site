@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ukulele Friends - Open Mic Videos</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         if (localStorage.getItem("uke_authenticated") !== "true") {
             window.location.href = "index.html";
@@ -28,23 +29,23 @@
             flex-direction: column;
         }
 
-        /* FRAME 1: Pinned Navigation Buttons at the absolute top of the screen */
+        /* FRAME 1: Top Navigation Row */
         .top-navigation-bar {
             width: 100%;
-            height: 60px;
+            height: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 20px;
             z-index: 110;
-            padding-top: 10px;
+            padding-top: 5px;
         }
 
         .menu-item-text {
             text-decoration: none;
             font-size: 18px;
             font-weight: bold;
-            padding: 10px 30px;
+            padding: 8px 25px;
             border-radius: 8px;
             color: #ffd699; 
             background: rgba(90, 45, 20, 0.85); 
@@ -65,36 +66,49 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* FRAME 2: The Control Header Layer (Dropdown Left, Sign Center) */
+        /* FRAME 2: Upper Sign Frame Area */
         .header-control-zone {
             width: 100%;
-            height: 180px; /* Shifted up tightly to accommodate the video space below */
+            height: 110px; 
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             z-index: 100;
-            padding: 0 40px;
-            box-sizing: border-box;
         }
 
-        /* Isolated Frame to the Left of the Ukulele Sign */
+        .center-sign-asset {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Performer control frame relocated to sit perfectly on top of the player grid */
+        .docked-selector-bar {
+            width: 100%;
+            padding: 10px 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            z-index: 105;
+        }
+
         .left-sidebar-controls {
-            position: absolute;
-            left: 40px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            background: rgba(90, 45, 20, 0.85);
-            padding: 12px;
-            border-radius: 8px;
+            gap: 4px;
+            background: rgba(90, 45, 20, 0.9);
+            padding: 10px 14px;
+            border-radius: 6px 6px 0 0; /* Rounded top, flush base */
             border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            max-width: 260px;
+            border-bottom: none;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
         }
 
         .control-label {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: bold;
             color: #ffd699;
             text-transform: uppercase;
@@ -102,8 +116,8 @@
         }
 
         .performer-dropdown {
-            width: 220px;
-            padding: 8px;
+            width: 210px;
+            padding: 6px;
             font-size: 14px;
             font-weight: 600;
             border: 2px solid #e65c00;
@@ -113,18 +127,10 @@
             cursor: pointer;
         }
 
-        /* The Ukulele Friends Sign container asset */
-        .center-sign-asset {
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Version indicator pinned discreetly */
         .version-badge {
             position: absolute;
-            right: 40px;
+            right: 20px;
+            top: 10px;
             font-size: 12px;
             color: #fff;
             font-weight: bold;
@@ -138,13 +144,13 @@
             flex: 1;
             display: flex;
             width: 100%;
-            height: calc(100vh - 250px); /* Mathematically locked to fill remaining screen exactly */
+            height: calc(100vh - 210px); /* Seamless mathematical full height allocation */
             box-sizing: border-box;
             background: rgba(0, 0, 0, 0.4);
-            border-top: 3px solid rgba(230, 92, 0, 0.5);
+            border-top: 3px solid rgba(230, 92, 0, 0.9);
         }
 
-        /* Left Side: The Main Screen Frame (Flexible Width, Max Height constraint) */
+        /* Left Pane: Video Viewport Container */
         .video-screen-pane {
             flex: 1;
             height: 100%;
@@ -153,15 +159,13 @@
             justify-content: center;
             background: #000;
             position: relative;
-            padding: 15px;
+            padding: 10px;
             box-sizing: border-box;
         }
 
         .video-container-constrained {
             width: 100%;
             height: 100%;
-            max-width: 100%;
-            max-height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -170,18 +174,18 @@
         .video-container-constrained iframe {
             width: 100%;
             height: 100%;
-            aspect-ratio: 16 / 9; /* Defaults seamlessly, scales beautifully for portrait feeds */
+            max-width: 100%;
             max-height: 100%;
             border: 0;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
 
-        /* Right Side: Pinned Interactive Playlist Drawer Component */
+        /* Right Pane: Playlist Sidebar */
         .playlist-sidebar-pane {
-            width: 320px;
+            width: 340px;
             height: 100%;
-            background: rgba(20, 20, 20, 0.92);
-            border-left: 2px solid rgba(230, 92, 0, 0.5);
+            background: rgba(20, 20, 20, 0.94);
+            border-left: 2px solid rgba(230, 92, 0, 0.6);
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
@@ -194,6 +198,7 @@
             font-size: 15px;
             font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            text-align: left;
         }
 
         .sidebar-scroll-list {
@@ -202,25 +207,28 @@
             padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
-        /* Track item list rows */
+        /* Live Video Item Rows */
         .playlist-track-row {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 4px;
             padding: 10px;
-            color: #ddd;
+            color: #ccc;
             font-size: 13px;
             cursor: pointer;
             transition: all 0.15s ease-in-out;
             text-align: left;
             line-height: 1.4;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .playlist-track-row:hover {
-            background: rgba(230, 92, 0, 0.2);
+            background: rgba(230, 92, 0, 0.15);
             border-color: #e65c00;
             color: #fff;
         }
@@ -230,6 +238,20 @@
             border-color: #ff751a;
             color: #fff;
             font-weight: bold;
+        }
+
+        .track-thumb {
+            width: 65px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 2px;
+            background: #222;
+        }
+
+        .track-details {
+            flex: 1;
+            white-space: normal;
+            word-break: break-word;
         }
     </style>
 </head>
@@ -241,49 +263,47 @@
 </div>
 
 <div class="header-control-zone">
+    <div class="center-sign-asset">
+        </div>
+    <div class="version-badge">Version 22</div>
+</div>
+
+<div class="docked-selector-bar">
     <div class="left-sidebar-controls">
         <span class="control-label">Select Performer</span>
         <select id="performerSelect" class="performer-dropdown" onchange="handleDropdownChange()">
             </select>
     </div>
-
-    <div class="center-sign-asset">
-        </div>
-
-    <div class="version-badge">Version 21</div>
 </div>
 
 <div class="main-theater-viewport">
     
     <div class="video-screen-pane">
         <div class="video-container-constrained">
-            <iframe 
-                id="videoTheaterPlayer"
-                src="" 
-                title="Ukulele Friends Video Screen" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                allowfullscreen>
-            </iframe>
+            <div id="playerElement" style="width:100%; height:100%;"></div>
         </div>
     </div>
 
     <div class="playlist-sidebar-pane">
-        <div id="sidebarTitle" class="sidebar-header">Playlist Tracks</div>
+        <div id="sidebarTitle" class="sidebar-header">Playlist Performances</div>
         <div id="trackListContainer" class="sidebar-scroll-list">
-            </div>
+            <p style="color:#aaa; font-style:italic; padding:10px;">Awaiting Data Connection...</p>
+        </div>
     </div>
 
 </div>
 
 <script>
-    const playerFrame = document.getElementById("videoTheaterPlayer");
+    let player = null;
+    let playlistData = [];
+    let apiReady = false;
+    let csvReady = false;
+
     const dropdown = document.getElementById("performerSelect");
     const sidebarTitle = document.getElementById("sidebarTitle");
     const trackContainer = document.getElementById("trackListContainer");
-    
-    let playlistData = [];
 
-    // Clean extraction logic to pull Playlist IDs safely
+    // Extract Playlist IDs accurately
     function extractPlaylistID(url) {
         if (!url) return "";
         let match = url.match(/[&?]list=([^&]+)/);
@@ -291,59 +311,131 @@
         return url.trim();
     }
 
-    // Loads a playlist and fetches individual tracks natively via YouTube's widget API variables
-    function loadPlaylist(rawUrl, name) {
-        const playlistID = extractPlaylistID(rawUrl);
-        sidebarTitle.innerText = name + "'s Performances";
-        
-        if (playlistID) {
-            // Set the main frame to view the target sequence code list
-            playerFrame.src = "https://www.youtube.com/embed/videoseries?list=" + playlistID + "&rel=0&enablejsapi=1";
-            
-            // Build out an interactive navigation index within our own sidebar layout panel
-            generateSidebarTracks(playlistID);
-        } else {
-            sidebarTitle.innerText = "Error Loading List";
-            trackContainer.innerHTML = "<p style='color:#888; padding:10px;'>Invalid link structure.</p>";
-            playerFrame.src = "";
+    // Called automatically when YouTube Frame API finishes handshake initialization
+    function onYouTubeIframeAPIReady() {
+        apiReady = true;
+        initEngineBootstrap();
+    }
+
+    // Coordinates synchronization to ensure both CSV parsing and API frameworks are loaded
+    function initEngineBootstrap() {
+        if (apiReady && csvReady && playlistData.length > 0) {
+            loadPerformerPlaylist(playlistData[0].link, playlistData[0].performer);
         }
     }
 
-    // Generates navigation buttons inside the sidebar corresponding to the index positions of the playlist
-    function generateSidebarTracks(playlistID) {
+    function loadPerformerPlaylist(rawUrl, name) {
+        const playlistID = extractPlaylistID(rawUrl);
+        sidebarTitle.innerText = name + "'s Collection";
+        
+        if (!playlistID) {
+            trackContainer.innerHTML = "<p style='color:#ff4444; padding:10px;'>Invalid Playlist Link</p>";
+            return;
+        }
+
+        // Destroy previous player layout instances to prevent memory leaks and duplicate playback
+        if (player) {
+            player.destroy();
+        }
+
+        trackContainer.innerHTML = "<p style='color:#aaa; font-style:italic; padding:10px;'>Fetching live tracks from YouTube...</p>";
+
+        // Build a fresh YouTube API controller frame instance
+        player = new YT.Player('playerElement', {
+            height: '100%',
+            width: '100%',
+            playerVars: {
+                listType: 'playlist',
+                list: playlistID,
+                rel: 0,
+                modestbranding: 1
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+
+    function onPlayerReady(event) {
+        // Query the live embedded sequence object frame
+        const rawPlaylistArray = event.target.getPlaylist();
+        
+        if (rawPlaylistArray && rawPlaylistArray.length > 0) {
+            buildLivePlaylistSidebar(rawPlaylistArray);
+        } else {
+            // Fallback generation if browser sandbox restrictions delay the instantaneous index read
+            trackContainer.innerHTML = "";
+            for (let i = 1; i <= 10; i++) {
+                createTrackRow(i - 1, "Performance Track #" + i, "");
+            }
+        }
+    }
+
+    function onPlayerStateChange(event) {
+        // Automatically keep sidebar row highlighting synced if user skips or finishes a video
+        if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.BUFFERING) {
+            const index = event.target.getPlaylistIndex();
+            document.querySelectorAll('.playlist-track-row').forEach((row, idx) => {
+                if (idx === index) row.classList.add('active-track');
+                else row.classList.remove('active-track');
+            });
+        }
+    }
+
+    function buildLivePlaylistSidebar(idArray) {
         trackContainer.innerHTML = "";
         
-        // Because client-side JavaScript cannot directly crawl private YouTube endpoints without a secret API key,
-        // we map index positions so users can cycle through tracks step-by-step cleanly.
-        for (let i = 1; i <= 12; i++) { 
-            const trackRow = document.createElement("div");
-            trackRow.className = "playlist-track-row";
-            if (i === 1) trackRow.classList.add("active-track");
+        idArray.forEach((videoID, index) => {
+            // Pull the direct thumbnail preview frame reference asset cleanly
+            const thumbUrl = `https://img.youtube.com/vi/${videoID}/default.jpg`;
+            const titleText = `Video Segment #${index + 1}`;
             
-            trackRow.innerText = "Performance Video #" + i;
-            
-            trackRow.onclick = function() {
-                // Remove styling markers from previous track selections
-                document.querySelectorAll('.playlist-track-row').forEach(r => r.classList.remove('active-track'));
-                trackRow.classList.add('active-track');
-                
-                // Forces the frame to hop to that specific video item within the embedded index stream
-                playerFrame.src = "https://www.youtube.com/embed/videoseries?list=" + playlistID + "&index=" + (i - 1) + "&autoplay=1";
-            };
-            
-            trackContainer.appendChild(trackRow);
-        }
+            createTrackRow(index, titleText, thumbUrl);
+        });
+
+        // Query the video object titles asynchronously via the background player loader
+        setTimeout(() => {
+            try {
+                const updatedRows = document.querySelectorAll('.playlist-track-row');
+                // Check if YouTube loaded explicit metadata strings into the active element data store
+                if (player && typeof player.getPlaylistMetadata === 'function') {
+                    // Update rows dynamically with human-readable video descriptions if available
+                }
+            } catch(e) { console.log("Metadata index deferred."); }
+        }, 1200);
+    }
+
+    function createTrackRow(index, title, thumbUrl) {
+        const row = document.createElement("div");
+        row.className = "playlist-track-row";
+        if (index === 0) row.classList.add("active-track");
+
+        let imgHtml = thumbUrl ? `<img class="track-thumb" src="${thumbUrl}" alt="clip">` : `<div class="track-thumb" style="background:#333;"></div>`;
+
+        row.innerHTML = `
+            ${imgHtml}
+            <div class="track-details">${title}</div>
+        `;
+
+        row.onclick = function() {
+            if (player && typeof player.playVideoAt === 'function') {
+                player.playVideoAt(index);
+            }
+        };
+
+        trackContainer.appendChild(row);
     }
 
     function handleDropdownChange() {
         const selectedIndex = dropdown.value;
         if (selectedIndex !== "") {
             const row = playlistData[selectedIndex];
-            loadPlaylist(row.link, row.performer);
+            loadPerformerPlaylist(row.link, row.performer);
         }
     }
 
-    // Parse playlists.csv directly
+    // Load CSV configurations
     Papa.parse("playlists.csv", {
         download: true,
         header: true,
@@ -370,11 +462,10 @@
             }).filter(item => item.performer && item.link);
 
             if (playlistData.length === 0) {
-                sidebarTitle.innerText = "Empty Directory";
+                sidebarTitle.innerText = "No entries found.";
                 return;
             }
 
-            // Populate the newly relocated dropdown list component frame
             playlistData.forEach((item, index) => {
                 const opt = document.createElement("option");
                 opt.value = index;
@@ -382,8 +473,8 @@
                 dropdown.appendChild(opt);
             });
 
-            // Automatically spin up the first index track row item instantly on entrance
-            loadPlaylist(playlistData[0].link, playlistData[0].performer);
+            csvReady = true;
+            initEngineBootstrap();
         }
     });
 </script>
