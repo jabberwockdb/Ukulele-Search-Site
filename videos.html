@@ -88,7 +88,7 @@
             justify-content: flex-start;
             align-items: flex-end; 
             z-index: 105;
-            height: 55px;
+            height: 65px; /* Expanded slightly to generate a clean visual line separation */
         }
 
         .left-sidebar-controls {
@@ -123,11 +123,12 @@
             cursor: pointer;
         }
 
+        /* FIXED: Height allocation rules updated to completely prevent video frame overlap */
         .main-theater-viewport {
             flex: 1;
             display: flex;
             width: 100%;
-            height: calc(100vh - 215px); 
+            height: calc(100vh - 225px); /* Increased spacing offset to cleanly push the video down */
             box-sizing: border-box;
             background: rgba(0, 0, 0, 0.4);
             border-top: 3px solid rgba(230, 92, 0, 0.9);
@@ -282,6 +283,7 @@
         initEngineBootstrap();
     }
 
+    // Runs internal logic when API systems register ready states
     function initEngineBootstrap() {
         if (apiReady && csvReady && playlistData.length > 0) {
             loadPerformerPlaylist(playlistData[0].link, playlistData[0].performer);
@@ -357,6 +359,7 @@
 
             trackContainer.appendChild(row);
 
+            // Fetch video metrics asynchronously
             fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoID}`)
                 .then(res => res.json())
                 .then(data => {
@@ -376,7 +379,8 @@
         }
     }
 
-    Papa.parse("playlists.csv?v=25", {
+    // Parse data file using cache-busting logic automatically
+    Papa.parse("playlists.csv?v=27", {
         download: true,
         header: true,
         skipEmptyLines: true,
