@@ -11,13 +11,13 @@
         }
     </script>
     <style>
-        /* Block master canvas from scrolling globally */
+        /* Restores natural page canvas flow with scrolling restricted as desired */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden; 
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             box-sizing: border-box;
         }
@@ -30,7 +30,7 @@
             align-items: center;
         }
 
-        /* Top Navigation Menu Links Bar Row Container */
+        /* Top Navigation Button Strip Zone */
         .top-navigation-bar {
             width: 100%;
             height: 45px;
@@ -69,60 +69,44 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Decorative Upper Structural Zone (Only holds the sign asset) */
+        /* Header Layout Area Component */
         .header-control-zone {
-            width: 100%;
+            width: 96%;
             max-width: 1200px;
-            height: 140px; 
+            height: 160px; 
             position: relative;
             z-index: 100;
-            margin-top: 5px;
-            flex-shrink: 0;
-        }
-
-        .center-sign-asset {
-            width: 100%;
-            height: 100%;
+            margin-top: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            pointer-events: none;
         }
 
-        /* Master Two-Column Flex Grid Framework Layout Workspace wrapper */
-        .master-workspace-wrapper {
-            display: flex;
-            width: 96%;
-            max-width: 1400px;
-            flex: 1; /* Automatically consumes remaining page height naturally */
-            gap: 25px;
-            margin-bottom: 20px;
-            overflow: hidden; /* Restricts internal child components from spilling over */
-            align-items: stretch;
-        }
-
-        /* Left Column: Side-by-Side Isolation Panel Frame for Sources List */
+        /* Relocated Left Sidebar Frame: Restored gracefully to the upper left layout grid */
         .left-sources-sidebar {
-            width: 240px;
+            position: absolute;
+            left: 0;
+            top: 0; 
+            bottom: 0;
             display: flex;
             flex-direction: column;
-            background: rgba(40, 20, 5, 0.35); /* Added subtle contrast backdrop */
-            padding: 15px;
+            background: rgba(40, 20, 5, 0.5); 
+            padding: 12px;
             border-radius: 8px;
+            width: 250px;
             box-sizing: border-box;
-            flex-shrink: 0;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .sidebar-header-wrapper {
-            margin-bottom: 12px;
-            flex-shrink: 0; /* Keeps "Sources" label perpetually locked to top */
-            border-bottom: 1px solid rgba(255, 214, 153, 0.2);
-            padding-bottom: 6px;
+            margin-bottom: 8px;
+            flex-shrink: 0; /* Keeps the word "Sources" locked to the top */
+            border-bottom: 1px solid rgba(255, 214, 153, 0.3);
+            padding-bottom: 4px;
         }
 
         .sidebar-label {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #ffd699;
             text-transform: uppercase;
@@ -133,35 +117,35 @@
         }
 
         .sidebar-version-tag {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             color: rgba(255, 214, 153, 0.6);
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-            margin-left: 6px;
+            margin-left: 5px;
         }
 
-        /* Inside individual items scroll engine tray */
+        /* Dynamic Tray Scrolling Track - Scrolls if item count extends past header sign box */
         .sources-scroll-tray {
             flex-grow: 1; 
-            overflow-y: auto; /* Internal row lists scroll independently here */
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding-right: 5px;
+            gap: 5px;
+            padding-right: 4px;
         }
 
         .sources-scroll-tray::-webkit-scrollbar {
-            width: 5px;
+            width: 4px;
         }
         .sources-scroll-tray::-webkit-scrollbar-thumb {
             background: rgba(230, 92, 0, 0.7);
-            border-radius: 3px;
+            border-radius: 2px;
         }
 
         .source-anchor-link {
             color: #ffffff;
             text-decoration: none;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             transition: all 0.15s ease-in-out;
             white-space: nowrap;
@@ -178,17 +162,28 @@
             transform: translateX(2px);
         }
 
-        /* Right Column: Main Application Interactive UI Box Container */
+        .center-sign-asset {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            height: 100%;
+        }
+
+        /* Main Search Container Box Component - Set to fluid auto height to allow natural extension flow */
         .search-container-box {
-            flex: 1; /* Scales horizontally and vertically to take up remaining space */
             background-color: #fff;
             border-radius: 8px;
             padding: 22px;
+            width: 96%;
+            max-width: 1200px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             box-sizing: border-box;
+            margin-top: 15px;
+            margin-bottom: 40px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            height: auto; /* Replaces strict clamping to let your grid flow completely naturally */
         }
 
         .search-instruction-text {
@@ -197,14 +192,12 @@
             color: #222;
             margin-bottom: 12px;
             display: block;
-            flex-shrink: 0;
         }
 
         .search-interactive-row {
             display: flex;
             gap: 15px;
             margin-bottom: 12px;
-            flex-shrink: 0;
         }
 
         .search-input-field {
@@ -242,24 +235,15 @@
             margin-bottom: 12px;
             display: none;
             font-weight: 600;
-            flex-shrink: 0;
         }
 
-        /* Results Data Grid Matrix Framework Scroll Window Viewport */
+        /* Data Grid Table Wrapper Viewport - Automatically drops down to reveal 10+ rows without vertical scrolling cut-offs */
         .table-scroll-container {
-            flex: 1; /* Automatically stretches to fill the container box entirely */
-            overflow-y: auto; /* Restores scrollbars safely */
+            width: 100%;
             border: 1px solid #ddd;
             background: white;
             border-radius: 4px;
-        }
-
-        .table-scroll-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        .table-scroll-container::-webkit-scrollbar-thumb {
-            background: rgba(230, 92, 0, 0.5);
-            border-radius: 3px;
+            overflow-x: auto;
         }
 
         .results-data-table {
@@ -268,9 +252,6 @@
         }
 
         .results-data-table th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
             background-color: #e65c00;
             color: white;
             padding: 12px;
@@ -285,7 +266,7 @@
             border-bottom: 1px solid #eee;
             font-size: 14px;
             color: #333;
-            height: 20px;
+            height: 22px; /* Uniform height baseline guarantee */
             vertical-align: middle;
         }
 
@@ -320,7 +301,6 @@
             display: block;
             border-top: 1px solid #eee;
             padding-top: 10px;
-            flex-shrink: 0;
         }
     </style>
 </head>
@@ -332,53 +312,52 @@
 </div>
 
 <div class="header-control-zone">
-    <div class="center-sign-asset"></div>
-</div>
-
-<div class="master-workspace-wrapper">
-    
     <div class="left-sources-sidebar">
         <div class="sidebar-header-wrapper">
             <span class="sidebar-label">Sources</span>
-            <span class="sidebar-version-tag">v46</span>
+            <span class="sidebar-version-tag">v47</span>
         </div>
         <div id="sourcesScrollTray" class="sources-scroll-tray">
-            <span style="color:#eee; font-size:12px; font-style:italic;">Processing song library...</span>
+            <span style="color:#eee; font-size:11px; font-style:italic;">Processing song library...</span>
         </div>
     </div>
+    
+    <div class="center-sign-asset">
+        <img src="https://images.squarespace-cdn.com/content/v1/60da0ec2f472eb2cb9842a12/460fb4ca-be78-4cf6-ba93-da4867d9657b/ukulele_friends_sign.png" style="display:none;" onerror="this.style.display='none';">
+        <div style="width:380px; height:115px; background:url('ukulele_friends_sign.png') no-repeat center; background-size:contain;"></div>
+    </div>
+</div>
 
-    <div class="search-container-box">
-        <span class="search-instruction-text">Please enter search terms to search among any fields below:</span>
-        
-        <div class="search-interactive-row">
-            <input type="text" id="searchInput" class="search-input-field" placeholder="Search by title, source, key..." onkeyup="handleKeyPress(event)">
-            <button class="search-execution-button" onclick="processMultiTermSearch()">Search</button>
-        </div>
-
-        <div id="alertBanner" class="matches-alert-banner"></div>
-
-        <div class="table-scroll-container">
-            <table class="results-data-table" id="resultsTable">
-                <thead>
-                    <tr>
-                        <th style="width: 35%;">Title</th>
-                        <th style="width: 25%;">Composers</th>
-                        <th style="width: 8%;">Key*</th>
-                        <th style="width: 8%;">AI Key*</th>
-                        <th style="width: 14%;">Source</th>
-                        <th style="width: 10%;">File Link</th>
-                    </tr>
-                </thead>
-                <tbody id="resultsTableBody">
-                </tbody>
-            </table>
-        </div>
-
-        <span class="footnote-annotation">
-            * = The Key is derived from the Title or the pdf name. The AI key uses a program to try to read the last chord in the pdf. The program can be wrong if it doesn't find the last chord. Or if the song doesn't end on its key chord.
-        </span>
+<div class="search-container-box">
+    <span class="search-instruction-text">Please enter search terms to search among any fields below:</span>
+    
+    <div class="search-interactive-row">
+        <input type="text" id="searchInput" class="search-input-field" placeholder="Search by title, source, key..." onkeyup="handleKeyPress(event)">
+        <button class="search-execution-button" onclick="processMultiTermSearch()">Search</button>
     </div>
 
+    <div id="alertBanner" class="matches-alert-banner"></div>
+
+    <div class="table-scroll-container">
+        <table class="results-data-table" id="resultsTable">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Title</th>
+                    <th style="width: 25%;">Composers</th>
+                    <th style="width: 8%;">Key*</th>
+                    <th style="width: 8%;">AI Key*</th>
+                    <th style="width: 14%;">Source</th>
+                    <th style="width: 10%;">File Link</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <span class="footnote-annotation">
+        * = The Key is derived from the Title or the pdf name. The AI key uses a program to try to read the last chord in the pdf. The program can be wrong if it doesn't find the last chord. Or if the song doesn't end on its key chord.
+    </span>
 </div>
 
 <script>
@@ -388,13 +367,11 @@
     const tbody = document.getElementById("resultsTableBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Dynamic grid layout loader fills rows down based on available space height
+    // Rebuilds and mounts exactly 10 spacious rows to guarantee a clean layout framework
     function initEmptyGrid() {
         alertBanner.style.display = "none";
         tbody.innerHTML = "";
-        
-        // Generates a generous baseline of initial empty layout grid canvas rows
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 10; i++) {
             const tr = document.createElement("tr");
             tr.className = "placeholder-row";
             tr.innerHTML = `<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`;
@@ -403,7 +380,6 @@
     }
     window.onload = initEmptyGrid;
 
-    // Normalizes header names case-insensitively and filters special characters out
     function extractCSVValue(rowObj, targetedHeaderName) {
         if (!rowObj) return "";
         const cleanTarget = targetedHeaderName.toLowerCase().replace(/[^a-z0-9_]/g, "");
@@ -416,63 +392,68 @@
         return "";
     }
 
-    // URL folder mapping corrector algorithm
-    function constructCleanSourceUrl(rawPdfUrl, sourceName) {
-        if (!rawPdfUrl) return "#";
-        let cleanUrl = rawPdfUrl.trim();
-        
-        if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
-            if (cleanUrl.includes("/")) {
-                return cleanUrl.substring(0, cleanUrl.lastIndexOf('/')) + '/';
-            }
-            return "#";
-        }
-        
-        try {
-            const urlObj = new URL(cleanUrl);
-            const baseOrigin = urlObj.origin;
-            const normalizedSource = sourceName.toLowerCase().trim();
+    // Custom Target URL Mapping Rule Router Exception Engine
+    function assignHardcodedSourceUrl(sourceName) {
+        const name = sourceName.toLowerCase().trim();
 
-            if (normalizedSource.startsWith("sun city")) {
-                return cleanUrl.substring(0, cleanUrl.lastIndexOf('/')) + '/';
-            }
-            if (normalizedSource.includes("richard g") || urlObj.hostname.includes("scorpexuke")) {
-                return `${baseOrigin}/songs/`;
-            }
-            return baseOrigin + "/";
-        } catch (e) {
-            return cleanUrl;
+        if (name.includes("doctor uke")) {
+            return "https://www.doctoruke.com/songs.html";
         }
+        if (name.includes("two chord song workbook")) {
+            return "https://www.scukes.org/doc/two_chord_song_workbook_11.pdf";
+        }
+        // Sequential lookups for numbered scukes books
+        if (name.includes("sun city uke book")) {
+            const match = name.match(/book\s*(\d+)/);
+            if (match && match[1]) {
+                return `https://www.scukes.org/songs${match[1]}.html`;
+            }
+            return "https://www.scukes.org/songs1.html"; 
+        }
+        if (name.includes("sun city uke")) {
+            return "https://www.scukes.org/songs.html";
+        }
+        if (name.includes("sun city education")) {
+            return "https://www.scukes.org/education.html";
+        }
+        if (name.includes("sun city tablature")) {
+            return "https://www.scukes.org/tablature.html";
+        }
+        if (name.includes("bytown ukulele")) {
+            return "https://bytownukulele.ca/songs/";
+        }
+        if (name.includes("ukejams")) {
+            return "https://ukejams.com/songs/";
+        }
+        
+        return "#"; 
     }
 
-    // Filters duplicates and populates the isolated Left Sidebar Tray component
+    // Processes, cross-checks, and populates your interactive Sources panel
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
         records.forEach(row => {
             const sourceName = extractCSVValue(row, "Source");
-            const fileLink = extractCSVValue(row, "Link");
-            
-            if (sourceName && fileLink) {
+            if (sourceName) {
                 const key = sourceName.trim();
                 if (!sourceMap.has(key)) {
-                    sourceMap.set(key, fileLink);
+                    sourceMap.set(key, true);
                 }
             }
         });
 
         const sortedSources = Array.from(sourceMap.keys()).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
         if (sortedSources.length === 0) {
-            sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:12px;'>No valid sources identified.</span>";
+            sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:11px;'>No unique sources cataloged.</span>";
             return;
         }
 
         sourcesScrollTray.innerHTML = "";
         sortedSources.forEach(sourceName => {
-            const sampleUrl = sourceMap.get(sourceName);
-            const verifiedWebUrl = constructCleanSourceUrl(sampleUrl, sourceName);
+            const customTargetUrl = assignHardcodedSourceUrl(sourceName);
 
             const anchor = document.createElement("a");
-            anchor.href = verifiedWebUrl;
+            anchor.href = customTargetUrl;
             anchor.target = "_blank";
             anchor.className = "source-anchor-link";
             anchor.textContent = sourceName;
@@ -486,7 +467,6 @@
         }
     }
 
-    // Multi-term filtering engine core execution algorithm loop
     function processMultiTermSearch() {
         const query = searchInput.value.trim().toLowerCase();
         
@@ -550,8 +530,7 @@
         });
     }
 
-    // Connects PapaParse library engine stream to file folder destination target sheet
-    Papa.parse("v13_uke_songs.csv?v=46", {
+    Papa.parse("v13_uke_songs.csv?v=47", {
         download: true,
         header: true,
         skipEmptyLines: true,
