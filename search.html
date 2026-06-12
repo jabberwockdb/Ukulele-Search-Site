@@ -11,7 +11,7 @@
         }
     </script>
     <style>
-        /* Freeze the entire browser viewport canvas - no main screen scrolling allowed */
+        /* Block master canvas from scrolling globally */
         html, body {
             margin: 0;
             padding: 0;
@@ -30,7 +30,7 @@
             align-items: center;
         }
 
-        /* Fixed Navigation Buttons Bar Zone - Placed safely above sign alignment */
+        /* Top Navigation Menu Links Bar Row Container */
         .top-navigation-bar {
             width: 100%;
             height: 45px;
@@ -69,44 +69,64 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Upper Structural Area Zone */
+        /* Decorative Upper Structural Zone (Only holds the sign asset) */
         .header-control-zone {
             width: 100%;
             max-width: 1200px;
-            height: 140px; /* Reduced box boundary to keep sign safe */
+            height: 140px; 
             position: relative;
             z-index: 100;
             margin-top: 5px;
             flex-shrink: 0;
         }
 
-        /* Stationary Left Sidebar Frame Component */
+        .center-sign-asset {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        /* Master Two-Column Flex Grid Framework Layout Workspace wrapper */
+        .master-workspace-wrapper {
+            display: flex;
+            width: 96%;
+            max-width: 1400px;
+            flex: 1; /* Automatically consumes remaining page height naturally */
+            gap: 25px;
+            margin-bottom: 20px;
+            overflow: hidden; /* Restricts internal child components from spilling over */
+            align-items: stretch;
+        }
+
+        /* Left Column: Side-by-Side Isolation Panel Frame for Sources List */
         .left-sources-sidebar {
-            position: absolute;
-            left: 20px;
-            top: 5px; 
-            bottom: 5px;
+            width: 240px;
             display: flex;
             flex-direction: column;
-            background: transparent;
-            padding: 0;
-            width: 250px;
+            background: rgba(40, 20, 5, 0.35); /* Added subtle contrast backdrop */
+            padding: 15px;
+            border-radius: 8px;
             box-sizing: border-box;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .sidebar-header-wrapper {
-            margin-bottom: 8px;
-            flex-shrink: 0; /* Keeps the word 'Sources' locked permanently on top */
+            margin-bottom: 12px;
+            flex-shrink: 0; /* Keeps "Sources" label perpetually locked to top */
+            border-bottom: 1px solid rgba(255, 214, 153, 0.2);
+            padding-bottom: 6px;
         }
 
         .sidebar-label {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: bold;
             color: #ffd699;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            text-decoration: underline;
-            text-underline-offset: 4px;
             text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
             text-align: left;
             display: inline-block;
@@ -115,18 +135,18 @@
         .sidebar-version-tag {
             font-size: 11px;
             font-weight: bold;
-            color: rgba(255, 214, 153, 0.7);
+            color: rgba(255, 214, 153, 0.6);
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
             margin-left: 6px;
         }
 
-        /* Sidebar Detail items scroll internally here without moving 'Sources' */
+        /* Inside individual items scroll engine tray */
         .sources-scroll-tray {
             flex-grow: 1; 
-            overflow-y: auto;
+            overflow-y: auto; /* Internal row lists scroll independently here */
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
             padding-right: 5px;
         }
 
@@ -143,7 +163,7 @@
             text-decoration: none;
             font-size: 13px;
             font-weight: 600;
-            transition: color 0.15s ease-in-out;
+            transition: all 0.15s ease-in-out;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -155,32 +175,20 @@
         .source-anchor-link:hover {
             color: #ffd699;
             text-decoration: underline;
+            transform: translateX(2px);
         }
 
-        .center-sign-asset {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-        }
-
-        /* Main Application Viewport Framework Frame Container Box */
+        /* Right Column: Main Application Interactive UI Box Container */
         .search-container-box {
+            flex: 1; /* Scales horizontally and vertically to take up remaining space */
             background-color: #fff;
             border-radius: 8px;
             padding: 22px;
-            width: 92%;
-            max-width: 1160px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             box-sizing: border-box;
-            margin-top: 5px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            /* Auto-calculates layout boundary box window to fit screen monitor exactly */
-            height: calc(100vh - 210px); 
         }
 
         .search-instruction-text {
@@ -237,10 +245,10 @@
             flex-shrink: 0;
         }
 
-        /* Strict Independent Inner Results Matrix Scroll Zone Viewport */
+        /* Results Data Grid Matrix Framework Scroll Window Viewport */
         .table-scroll-container {
-            flex-grow: 1; /* Automatically stretches to show all 10 rows perfectly */
-            overflow-y: auto; /* Handles inner scrolling safely */
+            flex: 1; /* Automatically stretches to fill the container box entirely */
+            overflow-y: auto; /* Restores scrollbars safely */
             border: 1px solid #ddd;
             background: white;
             border-radius: 4px;
@@ -324,48 +332,53 @@
 </div>
 
 <div class="header-control-zone">
+    <div class="center-sign-asset"></div>
+</div>
+
+<div class="master-workspace-wrapper">
+    
     <div class="left-sources-sidebar">
         <div class="sidebar-header-wrapper">
             <span class="sidebar-label">Sources</span>
-            <span class="sidebar-version-tag">v45</span>
+            <span class="sidebar-version-tag">v46</span>
         </div>
         <div id="sourcesScrollTray" class="sources-scroll-tray">
             <span style="color:#eee; font-size:12px; font-style:italic;">Processing song library...</span>
         </div>
     </div>
-    <div class="center-sign-asset"></div>
-</div>
 
-<div class="search-container-box">
-    <span class="search-instruction-text">Please enter search terms to search among any fields below:</span>
-    
-    <div class="search-interactive-row">
-        <input type="text" id="searchInput" class="search-input-field" placeholder="Search by title, source, key..." onkeyup="handleKeyPress(event)">
-        <button class="search-execution-button" onclick="processMultiTermSearch()">Search</button>
+    <div class="search-container-box">
+        <span class="search-instruction-text">Please enter search terms to search among any fields below:</span>
+        
+        <div class="search-interactive-row">
+            <input type="text" id="searchInput" class="search-input-field" placeholder="Search by title, source, key..." onkeyup="handleKeyPress(event)">
+            <button class="search-execution-button" onclick="processMultiTermSearch()">Search</button>
+        </div>
+
+        <div id="alertBanner" class="matches-alert-banner"></div>
+
+        <div class="table-scroll-container">
+            <table class="results-data-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Title</th>
+                        <th style="width: 25%;">Composers</th>
+                        <th style="width: 8%;">Key*</th>
+                        <th style="width: 8%;">AI Key*</th>
+                        <th style="width: 14%;">Source</th>
+                        <th style="width: 10%;">File Link</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <span class="footnote-annotation">
+            * = The Key is derived from the Title or the pdf name. The AI key uses a program to try to read the last chord in the pdf. The program can be wrong if it doesn't find the last chord. Or if the song doesn't end on its key chord.
+        </span>
     </div>
 
-    <div id="alertBanner" class="matches-alert-banner"></div>
-
-    <div class="table-scroll-container">
-        <table class="results-data-table" id="resultsTable">
-            <thead>
-                <tr>
-                    <th style="width: 35%;">Title</th>
-                    <th style="width: 25%;">Composers</th>
-                    <th style="width: 8%;">Key*</th>
-                    <th style="width: 8%;">AI Key*</th>
-                    <th style="width: 14%;">Source</th>
-                    <th style="width: 10%;">File Link</th>
-                </tr>
-            </thead>
-            <tbody id="resultsTableBody">
-            </tbody>
-        </table>
-    </div>
-
-    <span class="footnote-annotation">
-        * = The Key is derived from the Title or the pdf name. The AI key uses a program to try to read the last chord in the pdf. The program can be wrong if it doesn't find the last chord. Or if the song doesn't end on its key chord.
-    </span>
 </div>
 
 <script>
@@ -375,11 +388,13 @@
     const tbody = document.getElementById("resultsTableBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Renders the clean 10 empty canvas layout rows upon initialization
+    // Dynamic grid layout loader fills rows down based on available space height
     function initEmptyGrid() {
         alertBanner.style.display = "none";
         tbody.innerHTML = "";
-        for (let i = 0; i < 10; i++) {
+        
+        // Generates a generous baseline of initial empty layout grid canvas rows
+        for (let i = 0; i < 12; i++) {
             const tr = document.createElement("tr");
             tr.className = "placeholder-row";
             tr.innerHTML = `<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`;
@@ -388,7 +403,7 @@
     }
     window.onload = initEmptyGrid;
 
-    // Directly matches keys case-insensitively, stripping stray characters
+    // Normalizes header names case-insensitively and filters special characters out
     function extractCSVValue(rowObj, targetedHeaderName) {
         if (!rowObj) return "";
         const cleanTarget = targetedHeaderName.toLowerCase().replace(/[^a-z0-9_]/g, "");
@@ -401,7 +416,7 @@
         return "";
     }
 
-    // URL Exception processing component routing module
+    // URL folder mapping corrector algorithm
     function constructCleanSourceUrl(rawPdfUrl, sourceName) {
         if (!rawPdfUrl) return "#";
         let cleanUrl = rawPdfUrl.trim();
@@ -430,7 +445,7 @@
         }
     }
 
-    // Compiles sorted unique links inside the pinned sidebar container tray
+    // Filters duplicates and populates the isolated Left Sidebar Tray component
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
         records.forEach(row => {
@@ -471,7 +486,7 @@
         }
     }
 
-    // Multi-term filtering engine logic
+    // Multi-term filtering engine core execution algorithm loop
     function processMultiTermSearch() {
         const query = searchInput.value.trim().toLowerCase();
         
@@ -535,14 +550,14 @@
         });
     }
 
-    // Re-mapped PapaParse database connection anchor
-    Papa.parse("v13_uke_songs.csv?v=45", {
+    // Connects PapaParse library engine stream to file folder destination target sheet
+    Papa.parse("v13_uke_songs.csv?v=46", {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-            songDatabase = results.data; // Fixed array initialization mismatch bug
-            console.log("Database online. Connected records: " + songDatabase.length);
+            songDatabase = results.data;
+            console.log("Database initialized. Total items parsed: " + songDatabase.length);
             compileSourcesSidebar(songDatabase);
         }
     });
