@@ -11,32 +11,37 @@
         }
     </script>
     <style>
-        /* Allow natural page level scrolling */
+        /* Block global browser window scrolling so we can manage the sections manually */
         html, body {
             margin: 0;
             padding: 0;
-            min-height: 100vh;
-            overflow-y: auto;
+            height: 100vh;
+            overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        /* Fixed full-screen tropical background canvas */
         body {
             background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('login_search_background.png') no-repeat center top fixed;
             background-size: cover;
             display: flex;
             flex-direction: column;
-            align-items: center;
         }
 
-        /* Top Header Zone housing the menu buttons over the background image */
+        /* FRAME 1: The completely static top header. It NEVER scrolls or moves. */
         .fixed-header-zone {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 52vh; /* Holds space precisely for your background sign image */
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 42vh; 
-            padding-bottom: 25px;
-            flex-shrink: 0;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 20px;
+            box-sizing: border-box;
+            z-index: 100; /* Keeps the buttons and sign on the absolute top layer */
+            pointer-events: none; /* Allows mouse interactions to pass through to underlying layers if needed */
         }
 
         .main-menu-laptop {
@@ -44,6 +49,7 @@
             justify-content: center;
             gap: 20px;
             width: 100%;
+            pointer-events: auto; /* Restores button clicks specifically for the menu items */
         }
 
         .menu-item-text {
@@ -53,25 +59,40 @@
             padding: 12px 35px;
             border-radius: 8px;
             color: #ffd699; 
-            background: rgba(90, 45, 20, 0.4); 
+            background: rgba(90, 45, 20, 0.7); /* Slightly darkened for rich text contrast */
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s ease-in-out;
             white-space: nowrap;
         }
 
         .menu-item-text:hover {
-            background: rgba(140, 60, 20, 0.6);
+            background: rgba(140, 60, 20, 0.9);
             color: #ffffff;
         }
 
         .menu-item-text.active {
             color: #ffffff; 
-            background: rgba(230, 92, 0, 0.75); 
+            background: rgba(230, 92, 0, 0.85); 
             border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* White Search Container - scrolls naturally down the page */
+        /* FRAME 2: The scrollable area below the header zone */
+        .scrollable-content-tray {
+            position: absolute;
+            top: 52vh; /* Starts exactly where the fixed header zone finishes */
+            left: 0;
+            width: 100%;
+            bottom: 0;
+            overflow-y: auto; /* Activates clean, natural scrolling for the search application box */
+            padding: 10px 0 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+
+        /* The standalone white utility container card */
         .search-container {
             width: 95%;
             max-width: 1200px;
@@ -80,7 +101,6 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             box-sizing: border-box;
-            margin-bottom: 50px;
         }
 
         .search-header-row {
@@ -153,9 +173,9 @@
             text-align: left;
         }
 
-        /* Fixed window height optimized to display exactly 10 visible data rows comfortably */
+        /* Data Grid view window configured to display 10 rows before scrolling internally */
         .table-scroll-container {
-            height: 470px;
+            height: 465px; 
             overflow-y: auto;
             border: 1px solid #ddd;
             background: white;
@@ -214,38 +234,40 @@
     </nav>
 </div>
 
-<div class="search-container">
-    <div class="search-header-row">
-        <div class="search-instructions">Please enter search terms to search among any fields below:</div>
-        <div class="version-tag">Version 18</div>
-    </div>
-    
-    <div class="search-row">
-        <input type="text" id="searchInput" class="search-box" placeholder="Type search terms here..." onkeypress="handleKeyPress(event)">
-        <button class="search-submit-btn" onclick="processMultiTermSearch()">Search</button>
-    </div>
+<div class="scrollable-content-tray">
+    <div class="search-container">
+        <div class="search-header-row">
+            <div class="search-instructions">Please enter search terms to search among any fields below:</div>
+            <div class="version-tag">Version 19</div>
+        </div>
+        
+        <div class="search-row">
+            <input type="text" id="searchInput" class="search-box" placeholder="Type search terms here..." onkeypress="handleKeyPress(event)">
+            <button class="search-submit-btn" onclick="processMultiTermSearch()">Search</button>
+        </div>
 
-    <div id="alertContainer"></div>
+        <div id="alertContainer"></div>
 
-    <div class="table-scroll-container">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 25%;">Title</th>
-                    <th style="width: 25%;">Composers</th>
-                    <th style="width: 10%;">Key*</th>
-                    <th style="width: 12%;">AI Key*</th>
-                    <th style="width: 18%;">Origin</th>
-                    <th style="width: 10%;">File Link</th>
-                </tr>
-            </thead>
-            <tbody id="resultsTableBody">
-                </tbody>
-        </table>
-    </div>
+        <div class="table-scroll-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Title</th>
+                        <th style="width: 25%;">Composers</th>
+                        <th style="width: 10%;">Key*</th>
+                        <th style="width: 12%;">AI Key*</th>
+                        <th style="width: 18%;">Origin</th>
+                        <th style="width: 10%;">File Link</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                    </tbody>
+            </table>
+        </div>
 
-    <div class="database-footnote">
-        * =  The Key is derived from the Title or the pdf name.  The AI key uses a program to try to read the last chord in the pdf.  The program can be wrong if it doesn't find the last chord.  Or if the song doesn't end on it's key chord.
+        <div class="database-footnote">
+            * =  The Key is derived from the Title or the pdf name.  The AI key uses a program to try to read the last chord in the pdf.  The program can be wrong if it doesn't find the last chord.  Or if the song doesn't end on it's key chord.
+        </div>
     </div>
 </div>
 
