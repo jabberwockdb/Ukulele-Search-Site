@@ -63,7 +63,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* Sign & Upper Layout Zone (Absolute Positions relative to this bar) */
+        /* Sign & Upper Layout Zone */
         .header-control-zone {
             width: 100%;
             max-width: 1200px;
@@ -73,38 +73,57 @@
             margin-top: 10px;
         }
 
-        /* Completely transparent floating sidebar left of the sign text */
+        /* Sources List layout positions */
         .left-sources-sidebar {
             position: absolute;
             left: 20px;
-            bottom: 10px;
+            top: 0;
+            bottom: 0;
             display: flex;
             flex-direction: column;
-            background: transparent; /* Background styling removed completely to show wallpaper */
+            background: transparent;
             padding: 0;
             width: 250px;
             box-sizing: border-box;
         }
 
+        /* Header Layout Wrapper for Title & Version String */
+        .sidebar-header-wrapper {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+
         .sidebar-label {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             color: #ffd699;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            margin-bottom: 6px;
-            padding-bottom: 3px;
+            text-decoration: underline;
+            text-underline-offset: 4px;
             text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
             text-align: left;
         }
 
+        /* FIXED: Re-added clean floating text style tracking token */
+        .sidebar-version-tag {
+            font-size: 11px;
+            font-weight: bold;
+            color: rgba(255, 214, 153, 0.7);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
         .sources-scroll-tray {
-            max-height: 110px;
+            flex: 1; 
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
             padding-right: 5px;
+            margin-bottom: 5px;
         }
 
         .sources-scroll-tray::-webkit-scrollbar {
@@ -134,17 +153,16 @@
             text-decoration: underline;
         }
 
-        /* Sign Graphic Anchor Area */
         .center-sign-asset {
             width: 100%;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            pointer-events: none; /* Allows clicks to bypass empty spacing layers */
+            pointer-events: none;
         }
 
-        /* Main Search Container Box Panel Area */
+        /* Search Container Main Box Area */
         .search-container-box {
             background-color: #fff;
             border-radius: 8px;
@@ -153,7 +171,7 @@
             max-width: 1160px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             box-sizing: border-box;
-            margin-top: 10px; /* Restored back down to its proper position */
+            margin-top: 10px;
             margin-bottom: 40px;
             text-align: left;
         }
@@ -270,12 +288,14 @@
 
 <div class="header-control-zone">
     <div class="left-sources-sidebar">
-        <div class="sidebar-label">Sources</div>
+        <div class="sidebar-header-wrapper">
+            <div class="sidebar-label">Sources</div>
+            <span class="sidebar-version-tag">v31</span>
+        </div>
         <div id="sourcesScrollTray" class="sources-scroll-tray">
             <span style="color:#eee; font-size:12px; font-style:italic;">Processing song library...</span>
         </div>
     </div>
-
     <div class="center-sign-asset"></div>
 </div>
 
@@ -301,7 +321,7 @@
             </tr>
         </thead>
         <tbody id="resultsBody">
-            </tbody>
+        </tbody>
     </table>
 
     <span class="footnote-annotation">
@@ -317,18 +337,24 @@
     const resultsBody = document.getElementById("resultsBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Robust column matching to support 'Source' or older 'Origin' headers transparently
-    function locateCleanValue(rowObj, searchKey) {
-        const target = searchKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+    function locateValue(rowObj, exactKey, secondaryFallbackKey) {
+        if (rowObj[exactKey] !== undefined) return rowObj[exactKey].toString().trim();
+        if (secondaryFallbackKey && rowObj[secondaryFallbackKey] !== undefined) {
+            return rowObj[secondaryFallbackKey].toString().trim();
+        }
+        
+        const lowTarget1 = exactKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const lowTarget2 = secondaryFallbackKey ? secondaryFallbackKey.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+        
         for (let k in rowObj) {
-            if (k.toLowerCase().replace(/[^a-z0-9]/g, "") === target) {
+            const normalizedK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+            if (normalizedK === lowTarget1 || (lowTarget2 && normalizedK === lowTarget2)) {
                 return rowObj[k] ? rowObj[k].toString().trim() : "";
             }
         }
         return "";
     }
 
-    // Advanced URL base directory handler
     function constructCleanSourceUrl(rawPdfUrl, sourceName) {
         if (!rawPdfUrl) return "#";
         let cleanUrl = rawPdfUrl.trim();
@@ -342,7 +368,6 @@
             const baseOrigin = urlObj.origin;
             const normalizedSource = sourceName.toLowerCase();
 
-            // Override rule 1: Sun City Uke structural tracking mapping links
             if (normalizedSource.includes("sun city uke")) {
                 if (urlObj.pathname.includes("/ukulele/")) {
                     return `${baseOrigin}/ukulele/`;
@@ -350,33 +375,28 @@
                 return cleanUrl.substring(0, cleanUrl.lastIndexOf('/')) + '/';
             }
 
-            // Override rule 2: Richard G / Scorpexuke system patterns mapping rules
             if (normalizedSource.includes("richard g") || urlObj.hostname.includes("scorpexuke")) {
                 return `${baseOrigin}/songs/`;
             }
 
-            // Default fallback: clear directories down to standard domain line
             return baseOrigin + "/";
         } catch (e) {
             return cleanUrl;
         }
     }
 
-    // Build the Alphabetical Sources Sidebar
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
 
         records.forEach(row => {
             if (row.source && row.fileLink) {
                 const key = row.source.trim();
-                // Store first valid absolute link found for this source
                 if (!sourceMap.has(key) && row.fileLink.startsWith('http')) {
                     sourceMap.set(key, row.fileLink);
                 }
             }
         });
 
-        // Alphabetize the unique source keys
         const sortedSources = Array.from(sourceMap.keys()).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
 
         if (sortedSources.length === 0) {
@@ -456,8 +476,7 @@
         resultsTable.style.display = "table";
     }
 
-    // Parse songs data with advanced safety fallbacks for column switches
-    Papa.parse("songs.csv?v=26", {
+    Papa.parse("songs.csv?v=31", {
         download: true,
         header: true,
         skipEmptyLines: true,
@@ -466,19 +485,16 @@
 
             databaseRecords = rawRows.map(row => {
                 return {
-                    title: locateCleanValue(row, "title"),
-                    composers: locateCleanValue(row, "composers") || locateCleanValue(row, "composer"),
-                    key: locateCleanValue(row, "key"),
-                    aiKey: locateCleanValue(row, "aikey"),
-                    // Checks for "Source" first; falls back to "Origin" automatically if not renamed yet!
-                    source: locateCleanValue(row, "source") || locateCleanValue(row, "origin"),
-                    fileLink: locateCleanValue(row, "filelink") || locateCleanValue(row, "link")
+                    title: locateValue(row, "Title"),
+                    composers: locateValue(row, "Composers", "Composer"),
+                    key: locateValue(row, "Key"),
+                    aiKey: locateValue(row, "AI_Guessed_Key", "AI Key"),
+                    source: locateValue(row, "Source", "Origin"),
+                    fileLink: locateValue(row, "Link", "fileLink")
                 };
             }).filter(item => item.title || item.fileLink);
 
-            console.log("Database online. Connected records: " + databaseRecords.length);
-            
-            // Build transparent scroll tray listings 
+            console.log("Database active. Validated song count: " + databaseRecords.length);
             compileSourcesSidebar(databaseRecords);
         }
     });
