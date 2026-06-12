@@ -11,7 +11,7 @@
         }
     </script>
     <style>
-        /* Block master canvas from scrolling globally; individual sections will handle layout flow */
+        /* Block master canvas from scrolling globally; internal containers handle individual layouts */
         html, body {
             margin: 0;
             padding: 0;
@@ -30,7 +30,7 @@
             align-items: center;
         }
 
-        /* 1. PERMANENTLY STATIONARY TOP ZONE: Never moves, scrolls, or shifts */
+        /* 1. PERMANENTLY STATIONARY TOP ZONE: Locked in view, never scrolls */
         .stationary-top-zone {
             width: 100%;
             display: flex;
@@ -41,7 +41,7 @@
             z-index: 100;
         }
 
-        /* Top Navigation Button Strip Zone */
+        /* Top Navigation Button Strip */
         .top-navigation-bar {
             width: 100%;
             height: 45px;
@@ -78,41 +78,41 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Upper Structural Header Flex Grid Layout */
+        /* Upper Structural Header - Height increased to stabilize lookups with/without dev tools open */
         .header-control-zone {
             width: 96%;
             max-width: 1200px;
-            height: 125px; 
-            margin-top: 10px;
+            height: 160px; 
+            margin-top: 15px;
             margin-bottom: 5px;
             position: relative;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
         }
 
-        /* Stationary Left Sidebar Frame: Capped strictly to align perfectly with the wooden sign height */
+        /* Stationary Left Sidebar Frame: Aligns cleanly to the bottom edge of the wooden sign */
         .left-sources-sidebar {
             position: absolute;
             left: 0;
-            top: 0; 
-            height: 115px; /* Hard-capped perfectly to lock alignment with bottom of the wooden sign */
+            top: 10px; 
+            height: 135px; /* Proportional expansion room to avoid baseline layout overlap */
             display: flex;
             flex-direction: column;
-            background: rgba(40, 20, 5, 0.65); 
-            padding: 10px 12px;
+            background: rgba(40, 20, 5, 0.82); /* Darkened opacity to maximize word readability */
+            padding: 10px 14px;
             border-radius: 8px;
-            width: 250px;
+            width: 260px;
             box-sizing: border-box;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            z-index: 110; /* Elevated layer index forces text elements above background vectors */
+            border: 1px solid rgba(255, 214, 153, 0.3);
+            z-index: 200; /* Forces visibility over invisible canvas layer maps */
         }
 
         .sidebar-header-wrapper {
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             flex-shrink: 0; 
-            border-bottom: 1px solid rgba(255, 214, 153, 0.3);
-            padding-bottom: 3px;
+            border-bottom: 1px solid rgba(255, 214, 153, 0.4);
+            padding-bottom: 4px;
         }
 
         .sidebar-label {
@@ -120,8 +120,8 @@
             font-weight: bold;
             color: #ffd699;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.9);
             text-align: left;
             display: inline-block;
         }
@@ -129,47 +129,49 @@
         .sidebar-version-tag {
             font-size: 10px;
             font-weight: bold;
-            color: rgba(255, 214, 153, 0.6);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            color: rgba(255, 214, 153, 0.7);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
             margin-left: 5px;
         }
 
-        /* Dynamic Tray Scrolling Track - Contained internally inside the fixed boundary window */
+        /* Dynamic Tray Scrolling Track - Holds child anchor tags safely */
         .sources-scroll-tray {
             flex-grow: 1; 
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            display: block; /* Switched to traditional block grid to guarantee layout structure text height */
             padding-right: 4px;
         }
 
         .sources-scroll-tray::-webkit-scrollbar {
-            width: 5px;
+            width: 6px;
         }
         .sources-scroll-tray::-webkit-scrollbar-thumb {
-            background: rgba(230, 92, 0, 0.8);
+            background: rgba(230, 92, 0, 0.9);
             border-radius: 3px;
         }
 
+        /* Corrected Text Wrapper - Structural properties added to prevent text from folding or disappearing */
         .source-anchor-link {
-            color: #ffffff !important; /* Forces visible white coloration overriding container defaults */
-            text-decoration: none;
-            font-size: 12px;
+            color: #ffffff !important; 
+            text-decoration: none !important;
+            font-size: 13px;
             font-weight: 600;
-            transition: all 0.15s ease-in-out;
+            line-height: 18px; /* Strict baseline height alignment forces letters out */
+            margin-bottom: 6px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            display: block;
+            display: block; /* Forces line-breaks and structural box modeling */
             text-align: left;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+            text-shadow: 1px 1px 2px rgba(0,0,0,1);
+            transition: all 0.12s ease-in-out;
+            width: 100%;
         }
 
         .source-anchor-link:hover {
             color: #ffd699 !important;
-            text-decoration: underline;
-            transform: translateX(2px);
+            text-decoration: underline !important;
+            transform: translateX(3px);
         }
 
         /* Branding Sign Container Box wrapper */
@@ -178,16 +180,16 @@
             align-items: center;
             justify-content: center;
             pointer-events: none;
-            height: 115px;
+            height: 135px;
             width: 380px;
-            z-index: 50; /* Keeps it clear from bleeding into sidebar interaction boxes */
+            z-index: 50; 
         }
 
-        /* 2. DYNAMIC BOTTOM SCROLL ZONE: Stretches and flows downward seamlessly */
+        /* 2. DYNAMIC BOTTOM SCROLL ZONE: Flows seamlessly downstream */
         .dynamic-bottom-scroll-zone {
             width: 100%;
             flex: 1; 
-            overflow-y: auto; /* Handles master table frame expansion scrolling safely */
+            overflow-y: auto; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -201,7 +203,7 @@
             border-radius: 4px;
         }
 
-        /* Main Search Container Box Component - Flows seamlessly to match 10 baseline layout rows */
+        /* Main Search Container Box - Scales dynamically with row length */
         .search-container-box {
             background-color: #fff;
             border-radius: 8px;
@@ -211,10 +213,10 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             box-sizing: border-box;
             margin-top: 5px;
-            margin-bottom: 40px;
+            margin-bottom: 45px;
             display: flex;
             flex-direction: column;
-            height: auto; /* Fluid height allows grid rows to expand without getting cut short */
+            height: auto; 
             flex-shrink: 0;
         }
 
@@ -269,7 +271,7 @@
             font-weight: 600;
         }
 
-        /* Results Data Grid Matrix Framework Wrapper Viewport */
+        /* Results Grid Frame Viewport Wrapper */
         .table-scroll-container {
             width: 100%;
             border: 1px solid #ddd;
@@ -348,7 +350,7 @@
         <div class="left-sources-sidebar">
             <div class="sidebar-header-wrapper">
                 <span class="sidebar-label">Sources</span>
-                <span class="sidebar-version-tag">v48</span>
+                <span class="sidebar-version-tag">v49</span>
             </div>
             <div id="sourcesScrollTray" class="sources-scroll-tray">
                 <span style="color:#eee; font-size:11px; font-style:italic;">Processing song library...</span>
@@ -404,7 +406,7 @@
     const tbody = document.getElementById("resultsTableBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Instantiates exactly 10 clean spacious columns on initialization
+    // Populates exactly 10 initial rows beautifully without overflow limits
     function initEmptyGrid() {
         alertBanner.style.display = "none";
         tbody.innerHTML = "";
@@ -429,7 +431,7 @@
         return "";
     }
 
-    // Explicit Source URL Translation Mapping Matrix
+    // Explicit Hardcoded Redirect Routing Translation Matrix
     function assignHardcodedSourceUrl(sourceName) {
         const name = sourceName.toLowerCase().trim();
 
@@ -465,7 +467,7 @@
         return "#"; 
     }
 
-    // Processes, alphabetical-sorts, and loads links into your independent scrolling tray
+    // Compiles, processes, and pushes visible links into the independent scroll tray
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
         records.forEach(row => {
@@ -480,7 +482,7 @@
 
         const sortedSources = Array.from(sourceMap.keys()).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
         if (sortedSources.length === 0) {
-            sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:11px;'>No sources parsed.</span>";
+            sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:12px;'>No sources detected.</span>";
             return;
         }
 
@@ -566,7 +568,7 @@
         });
     }
 
-    Papa.parse("v13_uke_songs.csv?v=48", {
+    Papa.parse("v13_uke_songs.csv?v=49", {
         download: true,
         header: true,
         skipEmptyLines: true,
