@@ -19,7 +19,7 @@
         }
 
         body {
-            /* FIXED: Shifted background image up (-40px) to shorten ropes and place sign directly under menu buttons */
+            /* Kept the background position shifted up to shorten ropes and place wooden sign perfectly */
             background: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url('login_search_background.png') no-repeat center -40px fixed;
             background-size: cover;
             display: flex;
@@ -74,11 +74,11 @@
             margin-top: 10px;
         }
 
-        /* Left Sidebar styling - spans top to bottom of header zone, completely transparent background */
+        /* Left Sidebar - High positioning, completely transparent background */
         .left-sources-sidebar {
             position: absolute;
             left: 20px;
-            top: -10px; /* Shifted up slightly to move sources up higher */
+            top: -10px; 
             bottom: 0;
             display: flex;
             flex-direction: column;
@@ -161,7 +161,7 @@
             pointer-events: none;
         }
 
-        /* Search Container Box Layout Area */
+        /* Search Container Main White Box Area */
         .search-container-box {
             background-color: #fff;
             border-radius: 8px;
@@ -289,7 +289,7 @@
     <div class="left-sources-sidebar">
         <div class="sidebar-header-wrapper">
             <div class="sidebar-label">Sources</div>
-            <span class="sidebar-version-tag">v32</span>
+            <span class="sidebar-version-tag">v33</span>
         </div>
         <div id="sourcesScrollTray" class="sources-scroll-tray">
             <span style="color:#eee; font-size:12px; font-style:italic;">Processing song library...</span>
@@ -336,10 +336,14 @@
     const resultsBody = document.getElementById("resultsBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Reverted directly to Version 19's mapping layout except fixing the exact CSV fields (Link and Source)
-    function locateValue(rowObj, exactKey, fallbackKey) {
-        if (rowObj[exactKey] !== undefined) return rowObj[exactKey].toString().trim();
-        if (fallbackKey && rowObj[fallbackKey] !== undefined) return rowObj[fallbackKey].toString().trim();
+    // Case-insensitive cell locator utility to completely prevent undefined field loading errors
+    function locateValue(rowObj, targetedKey) {
+        const cleanTarget = targetedKey.toLowerCase().trim();
+        for (let originalKey in rowObj) {
+            if (originalKey.toLowerCase().trim() === cleanTarget) {
+                return rowObj[originalKey] ? rowObj[originalKey].toString().trim() : "";
+            }
+        }
         return "";
     }
 
@@ -404,7 +408,7 @@
         }
     }
 
-    // ORIGINAL VERSION 19 SEARCH LOGIC UNTOUCHED
+    // PURE VERSION 19 SEARCH MATCHING LOGIC
     function executeSearchQuery() {
         const queryTerms = searchInput.value.toLowerCase().trim().split(/\s+/).filter(t => t.length > 0);
         
@@ -415,7 +419,6 @@
             return;
         }
 
-        // Filters exactly how Version 19 filtered items
         const matchingRows = databaseRecords.filter(row => {
             const combinedSearchString = `${row.title} ${row.composers} ${row.key} ${row.aiKey} ${row.source}`.toLowerCase();
             return queryTerms.every(term => combinedSearchString.includes(term));
@@ -432,7 +435,7 @@
         alertBanner.style.display = "none";
         resultsBody.innerHTML = "";
 
-        // Renders all matching items completely without limits exactly like Version 19
+        // Uncapped full print display exactly like version 19
         matchingRows.forEach(row => {
             const tableRow = document.createElement("tr");
             tableRow.innerHTML = `
@@ -449,7 +452,7 @@
         resultsTable.style.display = "table";
     }
 
-    Papa.parse("songs.csv?v=32", {
+    Papa.parse("songs.csv?v=33", {
         download: true,
         header: true,
         skipEmptyLines: true,
@@ -458,16 +461,16 @@
 
             databaseRecords = rawRows.map(row => {
                 return {
-                    title: locateValue(row, "Title", "title"),
-                    composers: locateValue(row, "Composers", "Composer"),
-                    key: locateValue(row, "Key", "key"),
-                    aiKey: locateValue(row, "AI_Guessed_Key", "AI Key"),
-                    source: locateValue(row, "Source", "Origin"), // Changed Origin to Source mapping smoothly
-                    fileLink: locateValue(row, "Link", "fileLink") // Maps directly to your 'Link' field name
+                    title: locateValue(row, "Title"),
+                    composers: locateValue(row, "Composers"),
+                    key: locateValue(row, "Key"),
+                    aiKey: locateValue(row, "AI_Guessed_Key"),
+                    source: locateValue(row, "Source"), // Successfully swapped row.origin to row.Source mapping layout safely
+                    fileLink: locateValue(row, "Link")   // Maps directly to your exact column header field name
                 };
-            }).filter(item => item.title && item.fileLink); // Version 19 core filtering rule kept intact
+            }).filter(item => item.title && item.fileLink); // Retained original version 19 cleanup rule safely
 
-            console.log("Database online. Records connected: " + databaseRecords.length);
+            console.log("Database online. Connected records: " + databaseRecords.length);
             compileSourcesSidebar(databaseRecords);
         }
     });
