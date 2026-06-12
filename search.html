@@ -288,7 +288,7 @@
     <div class="left-sources-sidebar">
         <div class="sidebar-header-wrapper">
             <div class="sidebar-label">Sources</div>
-            <span class="sidebar-version-tag">v35</span>
+            <span class="sidebar-version-tag">v38</span>
         </div>
         <div id="sourcesScrollTray" class="sources-scroll-tray">
             <span style="color:#eee; font-size:12px; font-style:italic;">Processing song library...</span>
@@ -439,8 +439,8 @@
         resultsTable.style.display = "table";
     }
 
-    // FIXED: Directly targets your specific header mapping variables cleanly
-    Papa.parse("songs.csv?v=35", {
+    // CONNECTED DIRECTLY TO YOUR REAL FILE TARGET NAME
+    Papa.parse("v13_uke_songs.csv?v=38", {
         download: true,
         header: true,
         skipEmptyLines: true,
@@ -448,7 +448,7 @@
             const rawRows = results.data;
 
             if (!rawRows || rawRows.length === 0) {
-                sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:12px;'>CSV file loaded blank. Check songs.csv format.</span>";
+                sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:12px;'>v13_uke_songs.csv loaded empty. Check file.</span>";
                 return;
             }
 
