@@ -6,18 +6,17 @@
     <title>Ukulele Friends - Song Search</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
+        // Optional Security Gate Check Component
         if (localStorage.getItem("uke_authenticated") !== "true") {
             window.location.href = "index.html";
         }
     </script>
     <style>
-        /* Force page canvas to remain locked and completely stationary */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden; /* Disables total page scrolling completely */
+            min-height: 100vh;
+            overflow-y: auto; /* Restores global page vertical scrolling track */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             box-sizing: border-box;
         }
@@ -30,28 +29,27 @@
             align-items: center;
         }
 
-        /* Fixed Navigation Wrapper Bar at the extreme top */
+        /* Fixed Navigation Buttons Bar Zone - Placed safely away from sign */
         .top-navigation-bar {
             width: 100%;
-            height: 45px;
+            height: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 20px;
-            z-index: 120;
-            background: rgba(0, 0, 0, 0.2);
-            padding-top: 2px;
+            z-index: 110;
+            padding-top: 5px;
             flex-shrink: 0;
         }
 
         .menu-item-text {
             text-decoration: none;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
-            padding: 6px 22px;
-            border-radius: 6px;
+            padding: 8px 25px;
+            border-radius: 8px;
             color: #ffd699; 
-            background: rgba(90, 45, 20, 0.9); 
+            background: rgba(90, 45, 20, 0.85); 
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s ease-in-out;
             white-space: nowrap;
@@ -64,39 +62,42 @@
 
         .menu-item-text.active {
             color: #ffffff; 
-            background: rgba(230, 92, 0, 0.95); 
+            background: rgba(230, 92, 0, 0.9); 
             border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* Absolute Upper Layout Boundary Block Frame */
+        /* Upper Structural Area Zone */
         .header-control-zone {
             width: 100%;
             max-width: 1200px;
-            height: 140px; /* Reduced to ensure no sign overlapping happens */
+            height: 180px; 
             position: relative;
             z-index: 100;
-            margin-top: 5px;
+            margin-top: 10px;
             flex-shrink: 0;
         }
 
-        /* Locked Stationary Sidebar Left Panel Frame */
+        /* Stationary Left Sources Sidebar Panel Frame Component */
         .left-sources-sidebar {
             position: absolute;
             left: 20px;
-            top: 5px; 
-            bottom: 5px;
+            top: -10px; 
+            bottom: 0;
             display: flex;
             flex-direction: column;
             background: transparent;
             padding: 0;
-            width: 240px;
+            width: 250px;
             box-sizing: border-box;
         }
 
         .sidebar-header-wrapper {
-            margin-bottom: 6px;
-            flex-shrink: 0; /* Keep heading permanently visible */
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-shrink: 0; /* Keeps the label text pinned to the top */
         }
 
         .sidebar-label {
@@ -109,7 +110,6 @@
             text-underline-offset: 4px;
             text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
             text-align: left;
-            display: inline-block;
         }
 
         .sidebar-version-tag {
@@ -117,17 +117,17 @@
             font-weight: bold;
             color: rgba(255, 214, 153, 0.7);
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-            margin-left: 6px;
         }
 
-        /* Independent internal detail lines scrolling tray container */
+        /* Sources detail list items scroll internally here */
         .sources-scroll-tray {
-            flex-grow: 1; 
-            overflow-y: auto; /* Detail rows scroll here natively if overflowing */
+            flex: 1; 
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 6px;
             padding-right: 5px;
+            margin-bottom: 5px;
         }
 
         .sources-scroll-tray::-webkit-scrollbar {
@@ -166,37 +166,33 @@
             pointer-events: none;
         }
 
-        /* Main App Interactive UI Box Frame Container */
+        /* Core Search Application Main Display Frame Container Box */
         .search-container-box {
             background-color: #fff;
             border-radius: 8px;
-            padding: 20px;
-            width: 92%;
+            padding: 25px;
+            width: 90%;
             max-width: 1160px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             box-sizing: border-box;
-            margin-top: 5px;
+            margin-top: 10px;
+            margin-bottom: 50px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            /* Flex calculation keeps the lower table edge from ever dropping off-screen */
-            height: calc(100vh - 210px); 
         }
 
         .search-instruction-text {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             color: #222;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             display: block;
-            flex-shrink: 0;
         }
 
         .search-interactive-row {
             display: flex;
             gap: 15px;
-            margin-bottom: 12px;
-            flex-shrink: 0;
+            margin-bottom: 15px;
         }
 
         .search-input-field {
@@ -231,19 +227,19 @@
             padding: 10px 15px;
             border-radius: 6px;
             font-size: 14px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             display: none;
             font-weight: 600;
-            flex-shrink: 0;
         }
 
-        /* Data Matrix Windows Framework - Table Scroll Zone */
+        /* Strict Independent Inner Results Grid Scrolling Matrix Viewport */
         .table-scroll-container {
-            flex-grow: 1;
-            overflow-y: auto; /* Only this display viewport area will scroll */
+            height: 470px; /* Locked height guarantees exactly 10 initial rows fit */
+            overflow-y: auto; /* Restores the grid matrix scrolling bar */
             border: 1px solid #ddd;
             background: white;
             border-radius: 4px;
+            margin-top: 10px;
         }
 
         .table-scroll-container::-webkit-scrollbar {
@@ -307,12 +303,11 @@
         .footnote-annotation {
             font-size: 12px;
             color: #555;
-            line-height: 1.4;
-            margin-top: 12px;
+            line-height: 1.5;
+            margin-top: 15px;
             display: block;
             border-top: 1px solid #eee;
-            padding-top: 10px;
-            flex-shrink: 0;
+            padding-top: 12px;
         }
     </style>
 </head>
@@ -326,8 +321,8 @@
 <div class="header-control-zone">
     <div class="left-sources-sidebar">
         <div class="sidebar-header-wrapper">
-            <span class="sidebar-label">Sources</span>
-            <span class="sidebar-version-tag">v43</span>
+            <div class="sidebar-label">Sources</div>
+            <span class="sidebar-version-tag">v44</span>
         </div>
         <div id="sourcesScrollTray" class="sources-scroll-tray">
             <span style="color:#eee; font-size:12px; font-style:italic;">Processing song library...</span>
@@ -375,7 +370,7 @@
     const tbody = document.getElementById("resultsTableBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Builds the 10 initial blank placeholder layout lines
+    // Rebuilds and initializes the stable 10-row empty placeholder canvas grid
     function initEmptyGrid() {
         alertBanner.style.display = "none";
         tbody.innerHTML = "";
@@ -388,7 +383,7 @@
     }
     window.onload = initEmptyGrid;
 
-    // Case-insensitive space-stripped CSV column normalizer header lookup
+    // Directly matches CSV keys case-insensitively, stripping out stray punctuation characters
     function extractCSVValue(rowObj, targetedHeaderName) {
         if (!rowObj) return "";
         const cleanTarget = targetedHeaderName.toLowerCase().replace(/[^a-z0-9_]/g, "");
@@ -401,13 +396,19 @@
         return "";
     }
 
-    // URL Exception Router Rules Module
+    // Direct folder url path correction component router mapping module
     function constructCleanSourceUrl(rawPdfUrl, sourceName) {
         if (!rawPdfUrl) return "#";
         let cleanUrl = rawPdfUrl.trim();
+        
+        // If it's a relative asset path file address, skip URL domain breakdown mechanics
         if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
-            cleanUrl = "https://" + cleanUrl;
+            if (cleanUrl.includes("/")) {
+                return cleanUrl.substring(0, cleanUrl.lastIndexOf('/')) + '/';
+            }
+            return "#";
         }
+        
         try {
             const urlObj = new URL(cleanUrl);
             const baseOrigin = urlObj.origin;
@@ -425,16 +426,17 @@
         }
     }
 
-    // Compiles unique elements into the scrollable sidebar panel
+    // Generates, sorts, and renders individual source anchors inside sidebar tray container
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
         records.forEach(row => {
             const sourceName = extractCSVValue(row, "Source");
             const fileLink = extractCSVValue(row, "Link");
             
+            // Fixed verification rule: accepts any valid link column text block
             if (sourceName && fileLink) {
                 const key = sourceName.trim();
-                if (!sourceMap.has(key) && fileLink.startsWith('http')) {
+                if (!sourceMap.has(key)) {
                     sourceMap.set(key, fileLink);
                 }
             }
@@ -466,7 +468,7 @@
         }
     }
 
-    // Core Multiterm filtering search engine 
+    // Search query multi-term database scanner module
     function processMultiTermSearch() {
         const query = searchInput.value.trim().toLowerCase();
         
@@ -530,14 +532,15 @@
         });
     }
 
-    // Direct parser engine initializer connection point
-    Papa.parse("v13_uke_songs.csv?v=43", {
+    // Connects PapaParse library engine to database asset sheet
+    Papa.parse("v13_uke_songs.csv?v=44", {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
+            songDatabase = Math.max(results.data);
             songDatabase = results.data;
-            console.log("Database online. Connected records: " + songDatabase.length);
+            console.log("Database initialized. Total items parsed: " + songDatabase.length);
             compileSourcesSidebar(songDatabase);
         }
     });
