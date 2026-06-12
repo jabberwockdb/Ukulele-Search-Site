@@ -12,7 +12,6 @@
         }
     </script>
     <style>
-        /* Block global browser window scrolling to manage sections manually */
         html, body {
             margin: 0;
             padding: 0;
@@ -21,7 +20,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Fixed full-screen tropical background canvas */
         body {
             background: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url('login_search_background.png') no-repeat center top fixed;
             background-size: cover;
@@ -29,7 +27,6 @@
             flex-direction: column;
         }
 
-        /* FRAME 1: Top Navigation Row */
         .top-navigation-bar {
             width: 100%;
             height: 50px;
@@ -66,7 +63,6 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* FRAME 2: Upper Sign Frame Area */
         .header-control-zone {
             width: 100%;
             height: 110px; 
@@ -84,14 +80,13 @@
             justify-content: center;
         }
 
-        /* Middle Interaction Dock (Dropdown Left, Dynamic Current Video Title Center) */
         .docked-control-bar {
             width: 100%;
             padding: 0 20px;
             box-sizing: border-box;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end; /* Snaps flat directly against the video player border line */
+            align-items: flex-end; 
             z-index: 105;
             height: 55px;
         }
@@ -128,11 +123,10 @@
             cursor: pointer;
         }
 
-        /* Main Theater Headlining Title Overlay Area */
         .now-playing-marquee {
             flex: 1;
             margin-left: 20px;
-            margin-right: 360px; /* Accounts for right playlist sidebar layout width */
+            margin-right: 360px; 
             background: rgba(230, 92, 0, 0.9);
             color: #fff;
             font-size: 15px;
@@ -160,18 +154,16 @@
             border-radius: 4px;
         }
 
-        /* FRAME 3: Combined Theater Screen & Scrolling Sidebar Tray */
         .main-theater-viewport {
             flex: 1;
             display: flex;
             width: 100%;
-            height: calc(100vh - 215px); /* Adjusted layout math to maintain accurate sizing boundaries */
+            height: calc(100vh - 215px); 
             box-sizing: border-box;
             background: rgba(0, 0, 0, 0.4);
             border-top: 3px solid rgba(230, 92, 0, 0.9);
         }
 
-        /* Left Pane: Constrained Media Box Container */
         .video-screen-pane {
             flex: 1;
             height: 100%;
@@ -192,7 +184,6 @@
             justify-content: center;
         }
 
-        /* Right Pane: Playlist Sidebar Container */
         .playlist-sidebar-pane {
             width: 340px;
             height: 100%;
@@ -222,7 +213,6 @@
             gap: 6px;
         }
 
-        /* Live Video Item Rows */
         .playlist-track-row {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -275,23 +265,20 @@
 </div>
 
 <div class="header-control-zone">
-    <div class="center-sign-asset">
-        </div>
-    <div class="version-badge">Version 23</div>
+    <div class="center-sign-asset"></div>
+    <div class="version-badge">Version 24</div>
 </div>
 
 <div class="docked-control-bar">
     <div class="left-sidebar-controls">
         <span class="control-label">Select Performer</span>
         <select id="performerSelect" class="performer-dropdown" onchange="handleDropdownChange()">
-            </select>
+        </select>
     </div>
-    
     <div id="videoMarqueeHeader" class="now-playing-marquee">Loading Performance...</div>
 </div>
 
 <div class="main-theater-viewport">
-    
     <div class="video-screen-pane">
         <div class="video-container-constrained">
             <div id="playerElement" style="width:100%; height:100%;"></div>
@@ -301,10 +288,9 @@
     <div class="playlist-sidebar-pane">
         <div id="sidebarTitle" class="sidebar-header">Playlist Performances</div>
         <div id="trackListContainer" class="sidebar-scroll-list">
-            <p style="color:#aaa; font-style:italic; padding:10px;">Establishing connection to channel feed...</p>
+            <p style="color:#aaa; font-style:italic; padding:10px;">Connecting to system records...</p>
         </div>
     </div>
-
 </div>
 
 <script>
@@ -325,7 +311,6 @@
         return url.trim();
     }
 
-    // Fires automatically when Google handshake code finishes loading
     function onYouTubeIframeAPIReady() {
         apiReady = true;
         initEngineBootstrap();
@@ -341,19 +326,12 @@
         const playlistID = extractPlaylistID(rawUrl);
         sidebarTitle.innerText = name + "'s Collection";
         videoMarqueeHeader.innerText = "Loading " + name + "'s Playlist...";
-        
-        if (!playlistID) {
-            trackContainer.innerHTML = "<p style='color:#ff4444; padding:10px;'>Invalid Playlist Link</p>";
-            return;
-        }
+        trackContainer.innerHTML = "<p style='color:#aaa; font-style:italic; padding:10px;'>Fetching live data fields...</p>";
 
         if (player) {
             player.destroy();
         }
 
-        trackContainer.innerHTML = "<p style='color:#aaa; font-style:italic; padding:10px;'>Fetching live titles from YouTube...</p>";
-
-        // Build native background listener player to scrape track strings dynamically
         player = new YT.Player('playerElement', {
             height: '100%',
             width: '100%',
@@ -372,41 +350,27 @@
     }
 
     function onPlayerReady(event) {
-        // Query live array from frame engine container data data store
         const rawPlaylistArray = event.target.getPlaylist();
-        
         if (rawPlaylistArray && rawPlaylistArray.length > 0) {
             buildLivePlaylistSidebar(rawPlaylistArray);
         } else {
-            trackContainer.innerHTML = "<p style='color:#888; padding:10px; font-style:italic;'>No video strings could be loaded.</p>";
+            trackContainer.innerHTML = "<p style='color:#888; padding:10px; font-style:italic;'>Playlist details could not be parsed.</p>";
         }
     }
 
     function onPlayerStateChange(event) {
-        // Automatically sync tracking items when tracks skip
         if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.BUFFERING) {
             const index = event.target.getPlaylistIndex();
             
-            // Extract and push the precise live title text directly to the marquee header block
             try {
                 if (player && typeof player.getVideoData === 'function') {
                     const activeVideoData = player.getVideoData();
                     if (activeVideoData && activeVideoData.title) {
                         videoMarqueeHeader.innerText = "Now Playing: " + activeVideoData.title;
-                        
-                        // Dynamically update the specific track row label text if it was showing a generic name
-                        const targetedRow = document.getElementById("track-row-idx-" + index);
-                        if (targetedRow) {
-                            const detailsBlock = targetedRow.querySelector('.track-details');
-                            if (detailsBlock && (detailsBlock.innerText.includes("Video Segment") || detailsBlock.innerText.includes("Loading Title"))) {
-                                detailsBlock.innerText = activeVideoData.title;
-                            }
-                        }
                     }
                 }
-            } catch (err) { console.log("Marquee lookup query delayed."); }
+            } catch (err) { console.log("Marquee lookup deferred."); }
 
-            // Handle active track visual highlight states updates
             document.querySelectorAll('.playlist-track-row').forEach((row, idx) => {
                 if (idx === index) row.classList.add('active-track');
                 else row.classList.remove('active-track');
@@ -419,8 +383,6 @@
         
         idArray.forEach((videoID, index) => {
             const thumbUrl = `https://img.youtube.com/vi/${videoID}/default.jpg`;
-            // Fallback text placeholder that updates instantly as soon as a video buffers into play view
-            const placeholderTitle = `Video Segment #${index + 1}`;
             
             const row = document.createElement("div");
             row.id = "track-row-idx-" + index;
@@ -429,7 +391,7 @@
 
             row.innerHTML = `
                 <img class="track-thumb" src="${thumbUrl}" alt="clip">
-                <div class="track-details">${placeholderTitle}</div>
+                <div class="track-details" id="details-text-${index}">Performance Title #${index + 1}</div>
             `;
 
             row.onclick = function() {
@@ -439,22 +401,24 @@
             };
 
             trackContainer.appendChild(row);
-        });
 
-        // Background script loop: queries YouTube embeds directly to attempt to resolve track titles early
-        setTimeout(() => {
-            try {
-                if (player && typeof player.getPlaylistIndex === 'function') {
-                    const activeIndex = player.getPlaylistIndex();
-                    const activeVideoData = player.getVideoData();
-                    if (activeVideoData && activeVideoData.title) {
-                        videoMarqueeHeader.innerText = "Now Playing: " + activeVideoData.title;
-                        const mainRow = document.getElementById("track-row-idx-" + activeIndex);
-                        if (mainRow) mainRow.querySelector('.track-details').innerText = activeVideoData.title;
+            // Dynamic background fetch workaround to grab real metadata values via open JSON endpoint
+            fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoID}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.title) {
+                        document.getElementById(`details-text-${index}`).innerText = data.title;
+                        
+                        // If this is the starting video, update the marquee header immediately
+                        if (index === 0) {
+                            videoMarqueeHeader.innerText = "Now Playing: " + data.title;
+                        }
                     }
-                }
-            } catch(e) { console.log("Asynchronous lookup queued."); }
-        }, 1000);
+                })
+                .catch(err => {
+                    console.log("Fallback naming utilized for index: " + index);
+                });
+        });
     }
 
     function handleDropdownChange() {
@@ -465,7 +429,6 @@
         }
     }
 
-    // Load CSV configurations
     Papa.parse("playlists.csv", {
         download: true,
         header: true,
@@ -492,7 +455,7 @@
             }).filter(item => item.performer && item.link);
 
             if (playlistData.length === 0) {
-                sidebarTitle.innerText = "No entries found.";
+                sidebarTitle.innerText = "Empty Data Source File";
                 return;
             }
 
