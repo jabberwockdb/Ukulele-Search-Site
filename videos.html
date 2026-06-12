@@ -5,96 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ukulele Friends - Open Mic Videos</title>
     <script>
-        // Authentication guard
         if (localStorage.getItem("uke_authenticated") !== "true") {
             window.location.href = "index.html";
         }
     </script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Use the widescreen search background */
-            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('login_search_background.png') no-repeat center top fixed;
-            background-size: cover;
+        /* Block global browser window scrolling to manage sections manually (Matches Search Page) */
+        html, body {
             margin: 0;
             padding: 0;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Same Menu Styles as search.html */
+        /* Fixed full-screen tropical background canvas */
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('login_search_background.png') no-repeat center top fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* FRAME 1: The completely static top header. It NEVER scrolls or moves. */
+        .fixed-header-zone {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 52vh; /* Holds space precisely for your background sign image */
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 20px;
+            box-sizing: border-box;
+            z-index: 100; /* Keeps the buttons and sign on the absolute top layer */
+            pointer-events: none;
+        }
+
         .main-menu-laptop {
             display: flex;
             justify-content: center;
             gap: 20px;
-            padding-top: 18vh; /* Vertically consistent below high sign */
-            padding-bottom: 20px;
             width: 100%;
-            z-index: 10;
+            pointer-events: auto; /* Restores button clicks specifically for the menu items */
         }
 
-        .menu-item {
+        .menu-item-text {
             text-decoration: none;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            padding: 0;
-        }
-
-        .menu-item img {
-            height: 50px;
-            width: auto;
-            transition: opacity 0.2s;
-            display: block;
-        }
-
-        /* Default: Show normal images, hide glow images */
-        .menu-item img.normal { display: block; }
-        .menu-item img.glow { display: none; }
-
-        /* active Logic: Display the glow image */
-        .menu-item.active img.normal { display: none; }
-        .menu-item.active img.glow { display: block; }
-
-        /* Style the video container area */
-        .videos-container {
-            max-width: 1100px;
-            margin: 20px auto;
-            background: white;
-            padding: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 12px 35px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            color: #ffd699; 
+            background: rgba(90, 45, 20, 0.7); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+        }
+
+        .menu-item-text:hover {
+            background: rgba(140, 60, 20, 0.9);
+            color: #ffffff;
+        }
+
+        .menu-item-text.active {
+            color: #ffffff; 
+            background: rgba(230, 92, 0, 0.85); 
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* FRAME 2: The scrollable area below the header zone */
+        .scrollable-content-tray {
+            position: absolute;
+            top: 52vh; /* Starts exactly where the fixed header zone finishes */
+            left: 0;
+            width: 100%;
+            bottom: 0;
+            overflow-y: auto; /* Activates clean, natural scrolling for the content box */
+            padding: 10px 0 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+
+        /* The standalone white utility container card (Matches Search Container Layout) */
+        .video-container {
+            width: 95%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             box-sizing: border-box;
-            opacity: 0.98;
             text-align: center;
         }
-        .placeholder-message {
-            color: #777;
-            font-size: 18px;
-            padding: 50px;
-            font-style: italic;
+
+        .video-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .video-instructions {
+            font-size: 22px;
+            color: #222;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .version-tag {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+            background: #e0e0e0;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        /* Responsive video wrapper to keep the YouTube player beautifully framed */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
         }
     </style>
 </head>
 <body>
 
-<nav id="laptopMenu" class="main-menu-laptop">
-    <a href="search.html" class="menu-item">
-        <img src="button_search.png" alt="Song Search" class="normal">
-        <img src="button_glow_search.png" alt="Song Search (Highlighted)" class="glow">
-    </a>
-    
-    <a href="videos.html" class="menu-item active">
-        <img src="button_videos.png" alt="Open Mic Videos" class="normal">
-        <img src="button_glow_videos.png" alt="Open Mic Videos (Highlighted)" class="glow">
-    </a>
-</nav>
+<div class="fixed-header-zone">
+    <nav class="main-menu-laptop">
+        <a href="search.html" class="menu-item-text">Song Search</a>
+        <a href="videos.html" class="menu-item-text active">Open Mic Videos</a>
+    </nav>
+</div>
 
-<div class="videos-container">
-    <h2>Authorized Admin: Open Mic Videos</h2>
-    <p>This section is reserved for verified admin accounts. Access is currently pending development.</p>
-    
-    <div class="placeholder-message">
-        [ Video feed logic component to be added ]
+<div class="scrollable-content-tray">
+    <div class="video-container">
+        <div class="video-header-row">
+            <div class="video-instructions">Ukulele Friends Open Mic YouTube Playlist</div>
+            <div class="version-tag">Version 19</div>
+        </div>
+        
+        <div class="video-wrapper">
+            <iframe 
+                src="https://www.youtube.com/embed/videoseries?list=PL6Z16WfWvSST8qS_W_B8bA-Zofmka8Z5r" 
+                title="Ukulele Friends Open Mic" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+            </iframe>
+        </div>
     </div>
 </div>
 
