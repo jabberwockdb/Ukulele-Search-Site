@@ -26,7 +26,7 @@
             align-items: center;
         }
 
-        /* FRAME 1: Fixed Navigation Bar at the absolute top of the screen */
+        /* Top Navigation Row */
         .top-navigation-bar {
             width: 100%;
             height: 50px;
@@ -63,69 +63,62 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* FRAME 2: Control Header Layer (Sources Sidebar Left, Sign Center) */
+        /* Sign & Upper Layout Zone (Absolute Positions relative to this bar) */
         .header-control-zone {
             width: 100%;
             max-width: 1200px;
-            height: 140px; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height: 180px; 
             position: relative;
             z-index: 100;
             margin-top: 10px;
         }
 
-        /* Alphabetical Sources Sidebar Frame pinned to the left of the wooden sign */
+        /* Completely transparent floating sidebar left of the sign text */
         .left-sources-sidebar {
             position: absolute;
             left: 20px;
-            bottom: 0;
+            bottom: 10px;
             display: flex;
             flex-direction: column;
-            background: rgba(90, 45, 20, 0.92);
-            padding: 10px 12px;
-            border-radius: 6px 6px 0 0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-bottom: none;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
-            width: 240px;
+            background: transparent; /* Background styling removed completely to show wallpaper */
+            padding: 0;
+            width: 250px;
             box-sizing: border-box;
         }
 
         .sidebar-label {
-            font-size: 11px;
+            font-size: 14px;
             font-weight: bold;
             color: #ffd699;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             margin-bottom: 6px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
             padding-bottom: 3px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+            text-align: left;
         }
 
         .sources-scroll-tray {
-            max-height: 85px;
+            max-height: 110px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            padding-right: 2px;
+            gap: 5px;
+            padding-right: 5px;
         }
 
-        /* Custom styling scrollbar layout metrics for tiny tray viewports */
         .sources-scroll-tray::-webkit-scrollbar {
-            width: 4px;
+            width: 5px;
         }
         .sources-scroll-tray::-webkit-scrollbar-thumb {
             background: rgba(230, 92, 0, 0.7);
-            border-radius: 2px;
+            border-radius: 3px;
         }
 
         .source-anchor-link {
-            color: #fff;
+            color: #ffffff;
             text-decoration: none;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             transition: color 0.15s ease-in-out;
             white-space: nowrap;
@@ -133,6 +126,7 @@
             text-overflow: ellipsis;
             display: block;
             text-align: left;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
         }
 
         .source-anchor-link:hover {
@@ -140,14 +134,17 @@
             text-decoration: underline;
         }
 
+        /* Sign Graphic Anchor Area */
         .center-sign-asset {
-            height: 110px;
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            pointer-events: none; /* Allows clicks to bypass empty spacing layers */
         }
 
-        /* FRAME 3: Search Display Container Box Container */
+        /* Main Search Container Box Panel Area */
         .search-container-box {
             background-color: #fff;
             border-radius: 8px;
@@ -156,6 +153,7 @@
             max-width: 1160px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             box-sizing: border-box;
+            margin-top: 10px; /* Restored back down to its proper position */
             margin-bottom: 40px;
             text-align: left;
         }
@@ -211,7 +209,6 @@
             font-weight: 600;
         }
 
-        /* Results Matrix Grid Elements Table */
         .results-data-table {
             width: 100%;
             border-collapse: collapse;
@@ -275,7 +272,7 @@
     <div class="left-sources-sidebar">
         <div class="sidebar-label">Sources</div>
         <div id="sourcesScrollTray" class="sources-scroll-tray">
-            <span style="color:#aaa; font-size:11px; font-style:italic;">Loading catalog indexes...</span>
+            <span style="color:#eee; font-size:12px; font-style:italic;">Processing song library...</span>
         </div>
     </div>
 
@@ -320,7 +317,7 @@
     const resultsBody = document.getElementById("resultsBody");
     const sourcesScrollTray = document.getElementById("sourcesScrollTray");
 
-    // Helper to sanitize key tracking fields cleanly
+    // Robust column matching to support 'Source' or older 'Origin' headers transparently
     function locateCleanValue(rowObj, searchKey) {
         const target = searchKey.toLowerCase().replace(/[^a-z0-9]/g, "");
         for (let k in rowObj) {
@@ -331,62 +328,59 @@
         return "";
     }
 
-    // Handles smart parent domain string processing based on domain type configurations
+    // Advanced URL base directory handler
     function constructCleanSourceUrl(rawPdfUrl, sourceName) {
         if (!rawPdfUrl) return "#";
         let cleanUrl = rawPdfUrl.trim();
         
-        // Safety step: verify prefix protocols are explicitly specified
         if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
             cleanUrl = "https://" + cleanUrl;
         }
 
         try {
             const urlObj = new URL(cleanUrl);
-            const baseOrigin = urlObj.origin; // Extracts domain (e.g., https://example.com)
+            const baseOrigin = urlObj.origin;
             const normalizedSource = sourceName.toLowerCase();
 
-            // Override Exception Row #1: Sun City Uke validation rules rules
+            // Override rule 1: Sun City Uke structural tracking mapping links
             if (normalizedSource.includes("sun city uke")) {
-                // Preserves the primary nesting block directory paths intact
                 if (urlObj.pathname.includes("/ukulele/")) {
                     return `${baseOrigin}/ukulele/`;
                 }
                 return cleanUrl.substring(0, cleanUrl.lastIndexOf('/')) + '/';
             }
 
-            // Override Exception Row #2: Richard G's catalog system rules
+            // Override rule 2: Richard G / Scorpexuke system patterns mapping rules
             if (normalizedSource.includes("richard g") || urlObj.hostname.includes("scorpexuke")) {
                 return `${baseOrigin}/songs/`;
             }
 
-            // General Standard Base Domain Fallback Resolution Rule
+            // Default fallback: clear directories down to standard domain line
             return baseOrigin + "/";
         } catch (e) {
-            // Error handling protection mechanism tracking
             return cleanUrl;
         }
     }
 
-    // Generates the Alphabetical Link List inside our new Sources panel component frame
+    // Build the Alphabetical Sources Sidebar
     function compileSourcesSidebar(records) {
         const sourceMap = new Map();
 
-        // Map every row entry to group the clean file links with their source records fields
         records.forEach(row => {
             if (row.source && row.fileLink) {
                 const key = row.source.trim();
+                // Store first valid absolute link found for this source
                 if (!sourceMap.has(key) && row.fileLink.startsWith('http')) {
                     sourceMap.set(key, row.fileLink);
                 }
             }
         });
 
-        // Pull unique source strings, sort alphabetically
+        // Alphabetize the unique source keys
         const sortedSources = Array.from(sourceMap.keys()).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
 
         if (sortedSources.length === 0) {
-            sourcesScrollTray.innerHTML = "<span style='color:#aaa; font-size:11px;'>No sources matched.</span>";
+            sourcesScrollTray.innerHTML = "<span style='color:#eee; font-size:12px;'>No valid sources identified.</span>";
             return;
         }
 
@@ -399,7 +393,7 @@
             anchor.href = verifiedWebUrl;
             anchor.target = "_blank";
             anchor.className = "source-anchor-link";
-            anchor.title = `Visit external index for ${sourceName}`;
+            anchor.title = `Open index site for ${sourceName}`;
             anchor.textContent = sourceName;
 
             sourcesScrollTray.appendChild(anchor);
@@ -422,7 +416,6 @@
             return;
         }
 
-        // Search engine optimization mapping query filters across rows dynamically
         const matchingRows = databaseRecords.filter(row => {
             const combinedSearchString = `${row.title} ${row.composers} ${row.key} ${row.aiKey} ${row.source}`.toLowerCase();
             return queryTerms.every(term => combinedSearchString.includes(term));
@@ -436,7 +429,6 @@
             return;
         }
 
-        // Limit rendering display rows safely to maintain speed execution times 
         const displayLimit = 50;
         if (matchingRows.length > displayLimit) {
             alertBanner.innerText = `⚠️ Showing first ${displayLimit} results of ${matchingRows.length} total matches found. Please add more specific keywords to refine your search.`;
@@ -450,8 +442,6 @@
 
         visibleSubset.forEach(row => {
             const tableRow = document.createElement("tr");
-
-            // Build structural columns mapping values directly back to our data rows cleanly
             tableRow.innerHTML = `
                 <td class="song-bold-title">${row.title || '--'}</td>
                 <td>${row.composers || '--'}</td>
@@ -466,8 +456,8 @@
         resultsTable.style.display = "table";
     }
 
-    // Connect and parse database records from playlists.csv utilizing standard cache-busting configurations
-    Papa.parse("songs.csv?v=25", {
+    // Parse songs data with advanced safety fallbacks for column switches
+    Papa.parse("songs.csv?v=26", {
         download: true,
         header: true,
         skipEmptyLines: true,
@@ -480,12 +470,15 @@
                     composers: locateCleanValue(row, "composers") || locateCleanValue(row, "composer"),
                     key: locateCleanValue(row, "key"),
                     aiKey: locateCleanValue(row, "aikey"),
+                    // Checks for "Source" first; falls back to "Origin" automatically if not renamed yet!
                     source: locateCleanValue(row, "source") || locateCleanValue(row, "origin"),
                     fileLink: locateCleanValue(row, "filelink") || locateCleanValue(row, "link")
                 };
             }).filter(item => item.title || item.fileLink);
 
-            // Execute dynamic sidebar generation instantly as soon as data passes validation checkpoints
+            console.log("Database online. Connected records: " + databaseRecords.length);
+            
+            // Build transparent scroll tray listings 
             compileSourcesSidebar(databaseRecords);
         }
     });
