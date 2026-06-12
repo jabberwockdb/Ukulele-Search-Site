@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ukulele Friends - Open Mic Videos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         if (localStorage.getItem("uke_authenticated") !== "true") {
             window.location.href = "index.html";
         }
     </script>
     <style>
-        /* Block global browser window scrolling to manage sections manually (Matches Search Page) */
+        /* Block global browser window scrolling to manage sections manually */
         html, body {
             margin: 0;
             padding: 0;
@@ -83,7 +84,7 @@
             left: 0;
             width: 100%;
             bottom: 0;
-            overflow-y: auto; /* Activates clean, natural scrolling for the content box */
+            overflow-y: auto; /* Activates clean, natural scrolling for content boxes */
             padding: 10px 0 40px 0;
             display: flex;
             flex-direction: column;
@@ -91,7 +92,7 @@
             z-index: 1;
         }
 
-        /* The standalone white utility container card (Matches Search Container Layout) */
+        /* White Video Framework Container Box */
         .video-container {
             width: 95%;
             max-width: 1200px;
@@ -100,7 +101,6 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             box-sizing: border-box;
-            text-align: center;
         }
 
         .video-header-row {
@@ -126,7 +126,12 @@
             border-radius: 4px;
         }
 
-        /* Responsive video wrapper to keep the YouTube player beautifully framed */
+        /* Main Showcase Embed Theater Box */
+        .theater-box {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
         .video-wrapper {
             position: relative;
             padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
@@ -135,7 +140,7 @@
             max-width: 100%;
             background: #000;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         .video-wrapper iframe {
@@ -145,6 +150,55 @@
             width: 100%;
             height: 100%;
             border: 0;
+        }
+
+        /* Performer/Group Grid Layout */
+        .playlist-grid-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #cc5200;
+            text-align: left;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 6px;
+        }
+
+        .playlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            text-align: left;
+        }
+
+        .performer-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .performer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #e65c00;
+        }
+
+        .performer-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .view-action {
+            font-size: 13px;
+            font-weight: bold;
+            color: #e65c00;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -160,20 +214,114 @@
 <div class="scrollable-content-tray">
     <div class="video-container">
         <div class="video-header-row">
-            <div class="video-instructions">Ukulele Friends Open Mic YouTube Playlist</div>
+            <div id="nowPlayingTitle" class="video-instructions">Loading Open Mic Playlists...</div>
             <div class="version-tag">Version 19</div>
         </div>
         
-        <div class="video-wrapper">
-            <iframe 
-                src="https://www.youtube.com/embed/videoseries?list=PL6Z16WfWvSST8qS_W_B8bA-Zofmka8Z5r" 
-                title="Ukulele Friends Open Mic" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                allowfullscreen>
-            </iframe>
+        <div class="theater-box">
+            <div class="video-wrapper">
+                <iframe 
+                    id="videoTheaterPlayer"
+                    src="" 
+                    title="Ukulele Friends Open Mic Player" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+                </iframe>
+            </div>
         </div>
+
+        <div class="playlist-grid-header">Select a Performer or Group Playlist</div>
+        <div id="playlistGridContainer" class="playlist-grid">
+            </div>
     </div>
 </div>
+
+<script>
+    const playerFrame = document.getElementById("videoTheaterPlayer");
+    const headingText = document.getElementById("nowPlayingTitle");
+    const gridContainer = document.getElementById("playlistGridContainer");
+
+    // Parses your exact watch link sample style to strip out the target ID code cleanly
+    function extractPlaylistID(url) {
+        if (!url) return "";
+        let match = url.match(/[&?]list=([^&]+)/);
+        if (match && match[1]) return match[1].trim();
+        return url.trim();
+    }
+
+    function selectPlaylist(rawUrl, name) {
+        const playlistID = extractPlaylistID(rawUrl);
+        headingText.innerText = "Viewing: " + name + "'s Playlist";
+        
+        if (playlistID) {
+            // Converts the list variable ID cleanly into the official video series embedded viewer format
+            playerFrame.src = "https://www.youtube.com/embed/videoseries?list=" + playlistID + "&rel=0";
+        } else {
+            headingText.innerText = "Error: Invalid Playlist Link for " + name;
+            playerFrame.src = "";
+        }
+        
+        // Scroll smoothly back up inside the main tray to bring the player screen to focus
+        document.querySelector('.scrollable-content-tray').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Parse the system playlist CSV spreadsheet directly
+    Papa.parse("playlists.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            const data = results.data;
+            gridContainer.innerHTML = "";
+
+            // Capitalization fail-safe extractor specifically tracking 'Performer' and 'Link'
+            function findValue(rowObj, searchKey) {
+                const target = searchKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+                for (let k in rowObj) {
+                    if (k.toLowerCase().replace(/[^a-z0-9]/g, "") === target) {
+                        return rowObj[k] ? rowObj[k].toString().trim() : "";
+                    }
+                }
+                return "";
+            }
+
+            if (data.length === 0) {
+                gridContainer.innerHTML = "<p style='color:#888; font-style:italic;'>No listings found in playlists.csv.</p>";
+                return;
+            }
+
+            // Automatically queue up the first available row ("Na Hokus" from your sample file)
+            const firstRow = data[0];
+            const firstName = findValue(firstRow, "performer") || findValue(firstRow, "name") || "Open Mic";
+            const firstLink = findValue(firstRow, "link") || findValue(firstRow, "playlist");
+            if (firstLink) {
+                selectPlaylist(firstLink, firstName);
+            }
+
+            // Build select blocks for all performers found in the csv file
+            data.forEach(row => {
+                const name = findValue(row, "performer") || findValue(row, "name");
+                const link = findValue(row, "link") || findValue(row, "playlist");
+
+                if (!name || !link) return; 
+
+                const card = document.createElement("div");
+                card.className = "performer-card";
+                card.onclick = function() { selectPlaylist(link, name); };
+
+                card.innerHTML = `
+                    <div class="performer-name">${name}</div>
+                    <div class="view-action">Load Playlist ➔</div>
+                `;
+                gridContainer.appendChild(card);
+            });
+        },
+        error: function(err) {
+            console.error("Error reading file:", err);
+            headingText.innerText = "Error loading playlists.csv data document.";
+        }
+    });
+</script>
 
 </body>
 </html>
