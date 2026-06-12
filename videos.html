@@ -126,10 +126,39 @@
             border-radius: 4px;
         }
 
+        /* Selector Row with Dropdown Form styling */
+        .selector-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .selector-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .performer-dropdown {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 2px solid #cc5200;
+            border-radius: 6px;
+            background-color: #fff;
+            color: #222;
+            cursor: pointer;
+        }
+
         /* Main Showcase Embed Theater Box */
         .theater-box {
             width: 100%;
-            margin-bottom: 30px;
         }
 
         .video-wrapper {
@@ -151,55 +180,6 @@
             height: 100%;
             border: 0;
         }
-
-        /* Performer/Group Grid Layout */
-        .playlist-grid-header {
-            font-size: 18px;
-            font-weight: bold;
-            color: #cc5200;
-            text-align: left;
-            margin-bottom: 12px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 6px;
-        }
-
-        .playlist-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            text-align: left;
-        }
-
-        .performer-card {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .performer-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-color: #e65c00;
-        }
-
-        .performer-name {
-            font-size: 16px;
-            font-weight: bold;
-            color: #222;
-        }
-
-        .view-action {
-            font-size: 13px;
-            font-weight: bold;
-            color: #e65c00;
-            margin-top: 8px;
-        }
     </style>
 </head>
 <body>
@@ -215,9 +195,15 @@
     <div class="video-container">
         <div class="video-header-row">
             <div id="nowPlayingTitle" class="video-instructions">Loading Open Mic Playlists...</div>
-            <div class="version-tag">Version 19</div>
+            <div class="version-tag">Version 20</div>
         </div>
         
+        <div class="selector-row">
+            <span class="selector-label">Choose Performer/Group:</span>
+            <select id="performerSelect" class="performer-dropdown" onchange="handleDropdownChange()">
+                </select>
+        </div>
+
         <div class="theater-box">
             <div class="video-wrapper">
                 <iframe 
@@ -229,19 +215,16 @@
                 </iframe>
             </div>
         </div>
-
-        <div class="playlist-grid-header">Select a Performer or Group Playlist</div>
-        <div id="playlistGridContainer" class="playlist-grid">
-            </div>
     </div>
 </div>
 
 <script>
     const playerFrame = document.getElementById("videoTheaterPlayer");
     const headingText = document.getElementById("nowPlayingTitle");
-    const gridContainer = document.getElementById("playlistGridContainer");
+    const dropdown = document.getElementById("performerSelect");
+    let playlistData = [];
 
-    // Parses your exact watch link sample style to strip out the target ID code cleanly
+    // Parses link inputs to strip out the target playlist ID code cleanly
     function extractPlaylistID(url) {
         if (!url) return "";
         let match = url.match(/[&?]list=([^&]+)/);
@@ -254,15 +237,21 @@
         headingText.innerText = "Viewing: " + name + "'s Playlist";
         
         if (playlistID) {
-            // Converts the list variable ID cleanly into the official video series embedded viewer format
+            // Embeds the dynamic playlist with its native YouTube video selection panel
             playerFrame.src = "https://www.youtube.com/embed/videoseries?list=" + playlistID + "&rel=0";
         } else {
             headingText.innerText = "Error: Invalid Playlist Link for " + name;
             playerFrame.src = "";
         }
-        
-        // Scroll smoothly back up inside the main tray to bring the player screen to focus
-        document.querySelector('.scrollable-content-tray').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Triggered instantly when the user selects a new item from the dropdown menu
+    function handleDropdownChange() {
+        const selectedIndex = dropdown.value;
+        if (selectedIndex !== "") {
+            const row = playlistData[selectedIndex];
+            selectPlaylist(row.link, row.performer);
+        }
     }
 
     // Parse the system playlist CSV spreadsheet directly
@@ -271,10 +260,10 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-            const data = results.data;
-            gridContainer.innerHTML = "";
+            const rawRows = results.data;
+            dropdown.innerHTML = "";
 
-            // Capitalization fail-safe extractor specifically tracking 'Performer' and 'Link'
+            // Header normalizer logic mapping
             function findValue(rowObj, searchKey) {
                 const target = searchKey.toLowerCase().replace(/[^a-z0-9]/g, "");
                 for (let k in rowObj) {
@@ -285,40 +274,33 @@
                 return "";
             }
 
-            if (data.length === 0) {
-                gridContainer.innerHTML = "<p style='color:#888; font-style:italic;'>No listings found in playlists.csv.</p>";
+            // Clean data mapping loop
+            playlistData = rawRows.map(row => {
+                return {
+                    performer: findValue(row, "performer") || findValue(row, "name"),
+                    link: findValue(row, "link") || findValue(row, "playlist")
+                };
+            }).filter(item => item.performer && item.link);
+
+            if (playlistData.length === 0) {
+                headingText.innerText = "No playlists found in playlists.csv.";
                 return;
             }
 
-            // Automatically queue up the first available row ("Na Hokus" from your sample file)
-            const firstRow = data[0];
-            const firstName = findValue(firstRow, "performer") || findValue(firstRow, "name") || "Open Mic";
-            const firstLink = findValue(firstRow, "link") || findValue(firstRow, "playlist");
-            if (firstLink) {
-                selectPlaylist(firstLink, firstName);
-            }
-
-            // Build select blocks for all performers found in the csv file
-            data.forEach(row => {
-                const name = findValue(row, "performer") || findValue(row, "name");
-                const link = findValue(row, "link") || findValue(row, "playlist");
-
-                if (!name || !link) return; 
-
-                const card = document.createElement("div");
-                card.className = "performer-card";
-                card.onclick = function() { selectPlaylist(link, name); };
-
-                card.innerHTML = `
-                    <div class="performer-name">${name}</div>
-                    <div class="view-action">Load Playlist ➔</div>
-                `;
-                gridContainer.appendChild(card);
+            // Populate the Dropdown Menu Options
+            playlistData.forEach((item, index) => {
+                const opt = document.createElement("option");
+                opt.value = index;
+                opt.textContent = item.performer;
+                dropdown.appendChild(opt);
             });
+
+            // Automatically select and run the first playlist on load (Na Hokus)
+            selectPlaylist(playlistData[0].link, playlistData[0].performer);
         },
         error: function(err) {
-            console.error("Error reading file:", err);
-            headingText.innerText = "Error loading playlists.csv data document.";
+            console.error("Error reading CSV:", err);
+            headingText.innerText = "Error reading playlists.csv file.";
         }
     });
 </script>
