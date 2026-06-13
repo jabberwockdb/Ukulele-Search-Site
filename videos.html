@@ -13,12 +13,40 @@
             window.location.href = "index.html";
         }
 
-        // Mobile Address Bar Minimization Kick Routine
+        // Mobile Address Bar Minimization Kick Routine & Responsive Popup Logic
         window.addEventListener("load", function() {
             setTimeout(function() {
                 window.scrollTo(0, 1);
             }, 100);
+            
+            // Check persistent local storage before showing standard expansion notice popup
+            if (localStorage.getItem("hide_video_popup") !== "true") {
+                document.getElementById("popupOverlay").style.display = "flex";
+            }
+
+            // Also check for mobile layout profile condition to throw landscape optimization guidance
+            if (window.matchMedia("screen and (max-device-width: 768px) and (orientation: portrait)").matches) {
+                if (localStorage.getItem("hide_video_mobile_popup") !== "true") {
+                    document.getElementById("mobileAlertOverlay").style.display = "flex";
+                }
+            }
         });
+
+        function closeVideoPopup() {
+            const hideCheckbox = document.getElementById("hidePopupCheckbox");
+            if (hideCheckbox.checked) {
+                localStorage.setItem("hide_video_popup", "true");
+            }
+            document.getElementById("popupOverlay").style.display = "none";
+        }
+
+        function closeMobilePopup() {
+            const hideMobileCheckbox = document.getElementById("hideMobileCheckbox");
+            if (hideMobileCheckbox.checked) {
+                localStorage.setItem("hide_video_mobile_popup", "true");
+            }
+            document.getElementById("mobileAlertOverlay").style.display = "none";
+        }
     </script>
     <style>
         /* Synced global canvas layout constraints across index types */
@@ -38,27 +66,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        /* Responsive Landscape Advisory Banner for Mobile Devices */
-        .orientation-alert-banner {
-            display: none;
-            width: 100%;
-            background-color: #ffcc00;
-            color: #000;
-            text-align: center;
-            padding: 8px 10px;
-            font-size: 13px;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 1000;
-            box-sizing: border-box;
-        }
-
-        @media screen and (max-device-width: 768px) and (orientation: portrait) {
-            .orientation-alert-banner {
-                display: block;
-            }
         }
 
         /* 1. PERMANENTLY STATIONARY TOP ZONE */
@@ -122,7 +129,7 @@
             justify-content: center;
         }
 
-        /* Performers Sidebar Container - Tailored exactly to match the source table template layout */
+        /* Performers Sidebar Container */
         .left-performers-sidebar {
             position: absolute;
             left: 0;
@@ -197,7 +204,6 @@
             transform: translateX(3px);
         }
 
-        /* Highlights active performer selection */
         .performer-anchor-row.selected-performer {
             color: #ffaa66 !important;
             font-weight: 700;
@@ -324,11 +330,103 @@
             white-space: normal;
             word-break: break-word;
         }
+
+        /* 3. MODAL DIALOG COMPONENT STRUCTURES */
+        .modal-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-popup-box {
+            background: #ffffff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 440px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .modal-popup-message {
+            font-size: 15px;
+            color: #222;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .modal-popup-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .modal-checkbox-label {
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .modal-confirm-btn {
+            background-color: #e65c00;
+            color: #ffffff;
+            border: none;
+            padding: 8px 32px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .modal-confirm-btn:hover {
+            background-color: #cc5200;
+        }
     </style>
 </head>
 <body>
 
-<div class="orientation-alert-banner">🔄 For the best viewing experience, please rotate your device to Landscape view.</div>
+<div id="popupOverlay" class="modal-popup-overlay">
+    <div class="modal-popup-box">
+        <div class="modal-popup-message">
+            Be sure to click the video expansion button on the Youtube video to play full screen.
+        </div>
+        <div class="modal-popup-controls">
+            <label class="modal-checkbox-label">
+                <input type="checkbox" id="hidePopupCheckbox"> Do not remind me again.
+            </label>
+            <button class="modal-confirm-btn" onclick="closeVideoPopup()">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="mobileAlertOverlay" class="modal-popup-overlay">
+    <div class="modal-popup-box">
+        <div class="modal-popup-message">
+            Best viewed on a desktop. On your mobile, you can get a better view by rotating to landscape. If you rotate back and forth you can hide a Safari address bar in landscape.
+        </div>
+        <div class="modal-popup-controls">
+            <label class="modal-checkbox-label">
+                <input type="checkbox" id="hideMobileCheckbox"> Do not remind me again.
+            </label>
+            <button class="modal-confirm-btn" onclick="closeMobilePopup()">OK</button>
+        </div>
+    </div>
+</div>
 
 <div class="stationary-top-zone">
     <div class="top-navigation-bar">
@@ -488,7 +586,7 @@
         });
     }
 
-    Papa.parse("playlists.csv?v=29", {
+    Papa.parse("playlists.csv?v=31", {
         download: true,
         header: true,
         skipEmptyLines: true,

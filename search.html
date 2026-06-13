@@ -12,12 +12,27 @@
             window.location.href = "index.html";
         }
 
-        // Mobile Address Bar Minimization Kick Routine
+        // Mobile Address Bar Minimization Kick Routine & Responsive Popup Trigger
         window.addEventListener("load", function() {
             setTimeout(function() {
                 window.scrollTo(0, 1);
             }, 100);
+
+            // Trigger mobile orientation pop-up if on a mobile screen in portrait view
+            if (window.matchMedia("screen and (max-device-width: 768px) and (orientation: portrait)").matches) {
+                if (localStorage.getItem("hide_search_mobile_popup") !== "true") {
+                    document.getElementById("mobileAlertOverlay").style.display = "flex";
+                }
+            }
         });
+
+        function closeMobilePopup() {
+            const hideCheckbox = document.getElementById("hideMobileCheckbox");
+            if (hideCheckbox.checked) {
+                localStorage.setItem("hide_search_mobile_popup", "true");
+            }
+            document.getElementById("mobileAlertOverlay").style.display = "none";
+        }
     </script>
     <style>
         /* Prevents master canvas from scrolling; internal panels control layout views */
@@ -37,28 +52,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        /* Responsive Landscape Advisory Banner for Mobile Devices */
-        .orientation-alert-banner {
-            display: none;
-            width: 100%;
-            background-color: #ffcc00;
-            color: #000;
-            text-align: center;
-            padding: 8px 10px;
-            font-size: 13px;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 1000;
-            box-sizing: border-box;
-        }
-
-        /* Display warning banner only when on small screen profiles in portrait view */
-        @media screen and (max-device-width: 768px) and (orientation: portrait) {
-            .orientation-alert-banner {
-                display: block;
-            }
         }
 
         /* 1. PERMANENTLY STATIONARY TOP ZONE */
@@ -155,14 +148,6 @@
             text-shadow: 1px 1px 4px rgba(0,0,0,0.9);
             text-align: left;
             display: inline-block;
-        }
-
-        .sidebar-version-tag {
-            font-size: 10px;
-            font-weight: bold;
-            color: rgba(255, 214, 153, 0.7);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
-            margin-left: 5px;
         }
 
         /* Independent Inner Sidebar Scrolling Viewport Track */
@@ -314,7 +299,7 @@
         .results-data-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed; /* Added to strictly enforce percentage cell widths */
+            table-layout: fixed;
         }
 
         .results-data-table th {
@@ -382,11 +367,89 @@
             border-top: 1px solid #eee;
             padding-top: 10px;
         }
+
+        /* 3. MODAL POPUP DIALOGS */
+        .modal-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-popup-box {
+            background: #ffffff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 440px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .modal-popup-message {
+            font-size: 15px;
+            color: #222;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .modal-popup-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .modal-checkbox-label {
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .modal-confirm-btn {
+            background-color: #e65c00;
+            color: #ffffff;
+            border: none;
+            padding: 8px 32px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .modal-confirm-btn:hover {
+            background-color: #cc5200;
+        }
     </style>
 </head>
 <body>
 
-<div class="orientation-alert-banner">🔄 For the best viewing experience, please rotate your device to Landscape view.</div>
+<div id="mobileAlertOverlay" class="modal-popup-overlay">
+    <div class="modal-popup-box">
+        <div class="modal-popup-message">
+            Best viewed on a desktop. On your mobile, you can get a better view by rotating to landscape. If you rotate back and forth you can hide a Safari address bar in landscape.
+        </div>
+        <div class="modal-popup-controls">
+            <label class="modal-checkbox-label">
+                <input type="checkbox" id="hideMobileCheckbox"> Do not remind me again.
+            </label>
+            <button class="modal-confirm-btn" onclick="closeMobilePopup()">OK</button>
+        </div>
+    </div>
+</div>
 
 <div class="stationary-top-zone">
     <div class="top-navigation-bar">
@@ -398,7 +461,6 @@
         <div class="left-sources-sidebar">
             <div class="sidebar-header-wrapper">
                 <span class="sidebar-label">Sources</span>
-                <span class="sidebar-version-tag">v52</span>
             </div>
             <div id="sourcesScrollTray" class="sources-scroll-tray">
                 <span style="color:#eee; font-size:11px; font-style:italic;">Processing song library...</span>
@@ -642,7 +704,7 @@
         });
     }
 
-    Papa.parse("v13_uke_songs.csv?v=52", {
+    Papa.parse("v13_uke_songs.csv?v=54", {
         download: true,
         header: true,
         skipEmptyLines: true,
